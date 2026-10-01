@@ -49,45 +49,71 @@ export const createLocation = async (req, res) => {
       status: status || 'ACTIVE'
     });
 
-    // Auto-initialize default Floor 1, Unit A, and parking bays for immediate operability
+    // Auto-initialize floors, units, and parking bays
     try {
-      const floor = await Floor.create({
-        name: 'Floor 1',
-        floorNumber: 1,
-        parkingLocationId: location._id,
-        status: 'ACTIVE'
-      });
+      const floorsPayload = Array.isArray(req.body.floors) && req.body.floors.length > 0
+        ? req.body.floors
+        : [
+            {
+              name: 'Floor 1',
+              floorNumber: 1,
+              units: [
+                {
+                  name: 'Unit A',
+                  code: 'A',
+                  bays: Math.max(1, Math.min(50, Number(req.body.initialBays) || 10))
+                }
+              ]
+            }
+          ];
 
-      const unit = await Unit.create({
-        name: 'Unit A',
-        code: 'A',
-        floorId: floor._id,
-        status: 'ACTIVE'
-      });
-
-      const initialBayCount = Math.max(1, Math.min(50, Number(req.body.initialBays) || 10));
-      const slotsToInsert = [];
-      for (let i = 1; i <= initialBayCount; i++) {
-        const slotNumber = `1A-${String(i).padStart(2, '0')}`;
-        let vehicleTypes = ['CAR', 'SUV'];
-        if (i >= 7 && i <= 8) vehicleTypes = ['MOTORCYCLE'];
-        else if (i === 9) vehicleTypes = ['CAR', 'SUV', 'MICROBUS', 'VAN'];
-
-        slotsToInsert.push({
-          locationId: location._id,
-          floorId: floor._id,
-          unitId: unit._id,
-          slotNumber,
-          vehicleTypes,
-          status: 'AVAILABLE',
-          position: { x: (i - 1) * 10, y: 10 }
+      for (const fData of floorsPayload) {
+        const floorNumber = Number(fData.floorNumber) || 1;
+        const floor = await Floor.create({
+          name: fData.name ? fData.name.trim() : `Floor ${floorNumber}`,
+          floorNumber,
+          parkingLocationId: location._id,
+          status: 'ACTIVE'
         });
-      }
-      if (slotsToInsert.length > 0) {
-        await ParkingSlot.insertMany(slotsToInsert);
+
+        const unitsData = Array.isArray(fData.units) && fData.units.length > 0
+          ? fData.units
+          : [{ name: 'Unit A', code: 'A', bays: 10 }];
+
+        for (const uData of unitsData) {
+          const unitCode = (uData.code || 'A').toUpperCase().trim();
+          const unit = await Unit.create({
+            name: uData.name ? uData.name.trim() : `Unit ${unitCode}`,
+            code: unitCode,
+            floorId: floor._id,
+            status: 'ACTIVE'
+          });
+
+          const bayCount = Math.max(1, Math.min(100, Number(uData.bays || uData.initialBays) || 10));
+          const slotsToInsert = [];
+          for (let i = 1; i <= bayCount; i++) {
+            const slotNumber = `${floorNumber}${unitCode}-${String(i).padStart(2, '0')}`;
+            let vehicleTypes = ['CAR', 'SUV'];
+            if (i % 5 === 0) vehicleTypes = ['MOTORCYCLE'];
+            else if (i % 7 === 0) vehicleTypes = ['CAR', 'SUV', 'MICROBUS', 'VAN'];
+
+            slotsToInsert.push({
+              locationId: location._id,
+              floorId: floor._id,
+              unitId: unit._id,
+              slotNumber,
+              vehicleTypes,
+              status: 'AVAILABLE',
+              position: { x: (i - 1) * 10, y: 10 }
+            });
+          }
+          if (slotsToInsert.length > 0) {
+            await ParkingSlot.insertMany(slotsToInsert);
+          }
+        }
       }
     } catch (subErr) {
-      console.warn('[Parking Controller] Initial floor/slot auto-creation note:', subErr.message);
+      console.warn('[Parking Controller] Initial floor/unit/slot auto-creation note:', subErr.message);
     }
 
     return res.status(201).json({
@@ -189,6 +215,78 @@ export const getLocationById = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error retrieving parking location.'
+    });
+  }
+};
+
+// @desc    Get complete hierarchical layout of a location (floors, units, slot counts)
+// @route   GET /api/parking/locations/:id/layout
+// @access  Private (ADMIN, MANAGER)
+export const getLocationLayout = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid parking location ID.'
+    });
+  }
+
+  try {
+    const location = await ParkingLocation.findById(id).populate('managerIds', 'name email phone');
+    if (!location) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parking location not found.'
+      });
+    }
+
+    const floors = await Floor.find({
+      parkingLocationId: location._id,
+      status: { $ne: 'INACTIVE' }
+    }).sort({ floorNumber: 1 });
+
+    const layoutFloors = [];
+    for (const fl of floors) {
+      const units = await Unit.find({
+        floorId: fl._id,
+        status: { $ne: 'INACTIVE' }
+      }).sort({ code: 1 });
+
+      const layoutUnits = [];
+      for (const un of units) {
+        const slotCount = await ParkingSlot.countDocuments({
+          unitId: un._id,
+          status: { $ne: 'INACTIVE' }
+        });
+        layoutUnits.push({
+          _id: un._id,
+          name: un.name,
+          code: un.code,
+          status: un.status,
+          slotCount
+        });
+      }
+
+      layoutFloors.push({
+        _id: fl._id,
+        name: fl.name,
+        floorNumber: fl.floorNumber,
+        status: fl.status,
+        units: layoutUnits
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      location,
+      floors: layoutFloors
+    });
+  } catch (error) {
+    console.error('[Parking Controller] getLocationLayout error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error retrieving facility layout.'
     });
   }
 };
@@ -557,10 +655,36 @@ export const createUnit = async (req, res) => {
       status: status || 'ACTIVE'
     });
 
+    const initialBays = Number(req.body.initialBays || req.body.bays) || 0;
+    if (initialBays > 0) {
+      const bayCount = Math.min(100, Math.max(1, initialBays));
+      const slotsToInsert = [];
+      for (let i = 1; i <= bayCount; i++) {
+        const slotNumber = `${floor.floorNumber}${normalizedCode}-${String(i).padStart(2, '0')}`;
+        let vehicleTypes = ['CAR', 'SUV'];
+        if (i % 5 === 0) vehicleTypes = ['MOTORCYCLE'];
+        else if (i % 7 === 0) vehicleTypes = ['CAR', 'SUV', 'MICROBUS', 'VAN'];
+
+        slotsToInsert.push({
+          locationId: floor.parkingLocationId,
+          floorId: floor._id,
+          unitId: unit._id,
+          slotNumber,
+          vehicleTypes,
+          status: 'AVAILABLE',
+          position: { x: (i - 1) * 10, y: 10 }
+        });
+      }
+      if (slotsToInsert.length > 0) {
+        await ParkingSlot.insertMany(slotsToInsert);
+      }
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Unit created successfully.',
-      unit
+      unit,
+      createdBays: initialBays
     });
   } catch (error) {
     console.error('[Parking Controller] createUnit error:', error);
