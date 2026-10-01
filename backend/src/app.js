@@ -14,6 +14,7 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import managerRoutes from './routes/managerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import { getHealthStatus } from './controllers/healthController.js';
 import { requireAuth } from './middleware/authMiddleware.js';
 import { globalLimiter } from './middleware/rateLimiters.js';
 
@@ -49,13 +50,9 @@ app.use(express.static(frontendPath));
 // Global Rate Limiting across all API routes (100 req/15min, higher in dev)
 app.use('/api', globalLimiter);
 
-// Health Check Endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
-});
+// Health Check Endpoints
+app.get('/health', getHealthStatus);
+app.get('/api/health', getHealthStatus);
 
 // API Routes
 app.use('/api/public', publicRoutes);
