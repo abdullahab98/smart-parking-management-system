@@ -255,7 +255,8 @@ export const getFloorsForLocation = async (req, res) => {
           !bookedIds.has(s._id.toString()) &&
           (!vehicleType || (s.vehicleTypes && s.vehicleTypes.includes(vehicleType)))
       ).length;
-      const occupied = total - available;
+      const occupied = slots.filter((s) => bookedIds.has(s._id.toString())).length;
+      const disabled = slots.filter((s) => s.status !== 'AVAILABLE').length;
 
       return {
         _id: floor._id,
@@ -264,7 +265,8 @@ export const getFloorsForLocation = async (req, res) => {
         status: floor.status,
         total,
         available,
-        occupied
+        occupied,
+        disabled
       };
     });
 
@@ -340,7 +342,8 @@ export const getUnitsForFloor = async (req, res) => {
           !bookedIds.has(s._id.toString()) &&
           (!vehicleType || (s.vehicleTypes && s.vehicleTypes.includes(vehicleType)))
       ).length;
-      const occupied = total - available;
+      const occupied = slots.filter((s) => bookedIds.has(s._id.toString())).length;
+      const disabled = slots.filter((s) => s.status !== 'AVAILABLE').length;
 
       return {
         _id: unit._id,
@@ -349,7 +352,8 @@ export const getUnitsForFloor = async (req, res) => {
         status: unit.status,
         total,
         available,
-        occupied
+        occupied,
+        disabled
       };
     });
 
