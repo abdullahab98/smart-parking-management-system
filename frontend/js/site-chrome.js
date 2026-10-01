@@ -91,11 +91,22 @@ function renderSiteChrome(activeKey = '') {
     }
   }
 
-  // 2. Render Site Footer
+  // 2. Render Site Footer (Restricted strictly to index.html and pages/parking.html)
   const footerMount = document.getElementById('site-footer');
   if (footerMount) {
-    footerMount.className = 'site-footer';
-    footerMount.innerHTML = getSharedFooterHTML(siteRoot);
+    const pathname = window.location.pathname || '';
+    const isParkingPage = pathname.endsWith('/parking.html') || pathname.endsWith('/parking');
+    const isIndexPage = pathname.endsWith('/index.html') || pathname === '/' || pathname.endsWith('/');
+
+    if (isParkingPage || isIndexPage) {
+      footerMount.className = 'site-footer';
+      footerMount.innerHTML = getSharedFooterHTML(siteRoot);
+    } else {
+      footerMount.innerHTML = '';
+      if (typeof footerMount.remove === 'function') {
+        footerMount.remove();
+      }
+    }
   }
 }
 

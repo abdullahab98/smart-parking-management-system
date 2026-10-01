@@ -207,48 +207,6 @@ function renderAdminShell(activeKey) {
   appContent.style.flexGrow = '1';
   main.appendChild(appContent);
 
-  const footer = document.createElement('footer');
-  footer.className = 'site-footer portal-site-footer';
-  footer.innerHTML = `
-    <div class="container" style="max-width: 100%; padding: 0;">
-      <div class="footer-grid">
-        <div class="footer-brand-col">
-          <a href="${siteRoot}index.html" class="brand-logo footer-logo">Smart Parking</a>
-          <p class="footer-tagline">Curated, reliable urban space reservations designed for intentional mobility.</p>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="footer-heading">Company</h4>
-          <ul class="footer-links">
-            <li><a href="${siteRoot}index.html#about">About</a></li>
-            <li><a href="${siteRoot}index.html#contact">Contact</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="footer-heading">Product</h4>
-          <ul class="footer-links">
-            <li><a href="${siteRoot}pages/parking.html">Parking Locations</a></li>
-            <li><a href="${siteRoot}index.html#pricing">Pricing</a></li>
-            <li><a href="${siteRoot}index.html#how-it-works">How It Works</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="footer-heading">Legal</h4>
-          <ul class="footer-links">
-            <li><a href="${siteRoot}index.html#privacy">Privacy</a></li>
-            <li><a href="${siteRoot}index.html#terms">Terms</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <p class="footer-copyright">&copy; 2026 Smart Parking System. All rights reserved.</p>
-      </div>
-    </div>
-  `;
-  main.appendChild(footer);
   shellRoot.appendChild(main);
 
   return appContent;
