@@ -4,6 +4,7 @@ import Floor from '../models/Floor.js';
 import Unit from '../models/Unit.js';
 import ParkingSlot from '../models/ParkingSlot.js';
 import Booking from '../models/Booking.js';
+import PricingSetting from '../models/PricingSetting.js';
 
 // Helper: Normalize query booking window
 const resolveBookingWindow = (query) => {
@@ -115,8 +116,19 @@ export const getPublicLocations = async (req, res) => {
       });
     }
 
-    // Lowest hourly rate across vehicle types is 30 BDT (Motorcycle)
-    const fromPrice = 30;
+    // Retrieve base hourly rate from pricing rules
+    let dynamicBaseHourly = 30;
+    try {
+      const pDoc = await PricingSetting.findOne().lean();
+      if (pDoc && pDoc.rates && pDoc.rates.hourly) {
+        dynamicBaseHourly =
+          pDoc.rates.hourly.motorcycle ??
+          pDoc.rates.hourly.MOTORCYCLE ??
+          pDoc.rates.hourly.car ??
+          pDoc.rates.hourly.CAR ??
+          30;
+      }
+    } catch (e) {}
 
     const data = locations.map((loc) => ({
       _id: loc._id,
@@ -128,7 +140,7 @@ export const getPublicLocations = async (req, res) => {
       status: loc.status,
       totalSlots: totalCountMap.get(loc._id.toString()) || 0,
       availableSlots: availableCountMap.get(loc._id.toString()) || 0,
-      fromPrice
+      fromPrice: loc.hourlyRate || dynamicBaseHourly
     }));
 
     const response = {
@@ -430,9 +442,40 @@ export const getSlotsForUnit = async (req, res) => {
   }
 };
 
+// @desc    Get public pricing configuration
+// @route   GET /api/public/pricing
+// @access  Public
+export const getPublicPricing = async (req, res) => {
+  try {
+    let setting = await PricingSetting.findOne().lean();
+    if (!setting) {
+      setting = await PricingSetting.create({});
+    }
+
+    return res.status(200).json({
+      success: true,
+      pricing: {
+        rates: setting.rates || {
+          hourly: { CAR: 50, MOTORCYCLE: 30, SUV: 70, MICROBUS: 80, VAN: 80 },
+          daily: { CAR: 500, MOTORCYCLE: 300, SUV: 700, MICROBUS: 800, VAN: 800 }
+        },
+        serviceCharge: setting.serviceCharge || 0,
+        freeCancellationHours: setting.freeCancellationHours || 2
+      }
+    });
+  } catch (error) {
+    console.error('[Public Controller] getPublicPricing error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve pricing settings.'
+    });
+  }
+};
+
 export default {
   getPublicLocations,
   getFloorsForLocation,
   getUnitsForFloor,
-  getSlotsForUnit
+  getSlotsForUnit,
+  getPublicPricing
 };

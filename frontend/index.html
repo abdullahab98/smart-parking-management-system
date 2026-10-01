@@ -91,7 +91,10 @@
                 name="location" 
                 class="search-input" 
                 placeholder="Where do you want to park?" 
+                list="hero-locations-datalist" 
+                autocomplete="off" 
                 required>
+              <datalist id="hero-locations-datalist"></datalist>
             </div>
 
             <div class="search-field search-field-date">
@@ -318,7 +321,7 @@
 
         <div class="pricing-grid">
           <!-- Hourly Card -->
-          <article class="pricing-card">
+          <article class="pricing-card" id="pricing-card-hourly">
             <div class="pricing-header">
               <span class="pricing-tag">Hourly</span>
               <h3 class="pricing-headline">Pay by the Hour</h3>
@@ -327,26 +330,27 @@
 
             <div class="pricing-figure-block">
               <div class="pricing-main-rate">
-                <span class="pricing-amount">৳50</span>
+                <span class="pricing-amount" id="pricing-hourly-amount">৳50</span>
                 <span class="pricing-unit">/ hour</span>
               </div>
               <span class="pricing-meta-label">Car Rate</span>
-              <p class="pricing-subrate">Motorcycle: ৳30/hour</p>
+              <p class="pricing-subrate" id="pricing-hourly-subrates">Motorcycle: ৳30/hr • SUV: ৳80/hr</p>
             </div>
 
-            <ul class="pricing-features">
+            <ul class="pricing-features" id="pricing-hourly-features">
               <li>Real-time slot availability</li>
-              <li>Digital booking slip</li>
+              <li>Instant digital booking slip</li>
               <li>Secure online payment</li>
+              <li id="pricing-cancellation-feature">Free cancellation up to 2 hrs before</li>
             </ul>
 
             <div class="pricing-action">
-              <a href="#pricing-details" class="pricing-link">Learn More &rarr;</a>
+              <a href="pages/parking.html" class="pricing-link">Book Hourly Parking &rarr;</a>
             </div>
           </article>
 
           <!-- Daily Card -->
-          <article class="pricing-card">
+          <article class="pricing-card" id="pricing-card-daily">
             <div class="pricing-header">
               <span class="pricing-tag">Daily</span>
               <h3 class="pricing-headline">Full-Day Pass</h3>
@@ -355,21 +359,22 @@
 
             <div class="pricing-figure-block">
               <div class="pricing-main-rate">
-                <span class="pricing-amount">৳500</span>
+                <span class="pricing-amount" id="pricing-daily-amount">৳500</span>
                 <span class="pricing-unit">/ day</span>
               </div>
               <span class="pricing-meta-label">Car Rate</span>
-              <p class="pricing-subrate">Motorcycle: ৳300/day</p>
+              <p class="pricing-subrate" id="pricing-daily-subrates">Motorcycle: ৳300/day • SUV: ৳800/day</p>
             </div>
 
-            <ul class="pricing-features">
+            <ul class="pricing-features" id="pricing-daily-features">
               <li>Guaranteed all-day bay reservation</li>
               <li>Flexible in-and-out access</li>
               <li>Priority customer assistance</li>
+              <li>Secure monitored facility</li>
             </ul>
 
             <div class="pricing-action">
-              <a href="#pricing-details" class="pricing-link">Learn More &rarr;</a>
+              <a href="pages/parking.html" class="pricing-link">Book Day Pass &rarr;</a>
             </div>
           </article>
         </div>

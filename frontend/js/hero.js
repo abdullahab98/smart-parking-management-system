@@ -1,10 +1,23 @@
 /**
- * Smart Parking Management System — Landing Page Hero & Dynamic Locations
- * Handles hero search redirection with validation and loads dynamic locations with fallback.
+ * Smart Parking Management System — Landing Page Hero, Dynamic Locations & Pricing
+ * Handles:
+ * 1. Hero search form validation, autocompletion datalist & redirection
+ * 2. Dynamic loading of live active parking facilities
+ * 3. Dynamic loading of system rates & pricing tiers
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. Hero Search Form Initialization
+  initHeroSearch();
+
+  // 2. Load Dynamic Parking Locations
+  await loadDynamicLocations();
+
+  // 3. Load Dynamic Pricing
+  await loadDynamicPricing();
+});
+
+function initHeroSearch() {
   const searchForm = document.getElementById('hero-search-form');
   const dateInput = document.getElementById('search-date');
   const timeInput = document.getElementById('search-time');
@@ -56,101 +69,188 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.location.href = `pages/parking.html?${params.toString()}`;
     });
   }
+}
 
-  // 2. Dynamic Locations Section with Fallback Preservation
+/**
+ * Loads dynamic parking locations from /api/public/locations
+ */
+async function loadDynamicLocations() {
   const grid = document.getElementById('landing-locations-grid') || document.querySelector('.locations-grid');
-  if (grid) {
-    try {
-      if (typeof apiRequest === 'function') {
-        const res = await apiRequest('/public/locations');
-        const locations = res.locations || [];
+  const datalist = document.getElementById('hero-locations-datalist');
 
-        if (locations.length > 0) {
-          // Clear static fallback cards only on verified API success
-          grid.innerHTML = '';
+  if (typeof apiRequest !== 'function') return;
 
-          locations.forEach((loc) => {
-            const card = document.createElement('article');
-            card.className = 'location-card';
+  try {
+    const res = await apiRequest('/public/locations');
+    const locations = res && res.locations ? res.locations : [];
 
-            // Media box
-            const mediaWrap = document.createElement('div');
-            mediaWrap.className = 'location-media-placeholder';
-            mediaWrap.setAttribute('aria-label', `Preview image for ${loc.name}`);
+    // Populate Datalist for autocomplete in Hero search
+    if (datalist && locations.length > 0) {
+      datalist.innerHTML = '';
+      const suggestions = new Set();
+      locations.forEach((loc) => {
+        if (loc.name) suggestions.add(loc.name);
+        if (loc.address && loc.address.area) suggestions.add(loc.address.area);
+        if (loc.address && loc.address.city) suggestions.add(loc.address.city);
+      });
+      suggestions.forEach((val) => {
+        const option = document.createElement('option');
+        option.value = val;
+        datalist.appendChild(option);
+      });
+    }
 
-            if (loc.images && loc.images.length > 0) {
-              const img = document.createElement('img');
-              img.src = loc.images[0];
-              img.alt = loc.name;
-              img.className = 'location-img';
-              img.style.width = '100%';
-              img.style.height = '100%';
-              img.style.objectFit = 'cover';
-              img.loading = 'lazy';
-              mediaWrap.appendChild(img);
-            } else {
-              const label = document.createElement('span');
-              label.className = 'media-placeholder-label';
-              label.textContent = 'Preview';
-              mediaWrap.appendChild(label);
-            }
-            card.appendChild(mediaWrap);
+    // Populate Dynamic Locations Grid
+    if (grid && locations.length > 0) {
+      grid.innerHTML = '';
 
-            // Body
-            const body = document.createElement('div');
-            body.className = 'location-body';
+      locations.forEach((loc) => {
+        const card = document.createElement('article');
+        card.className = 'location-card';
 
-            const titleWrap = document.createElement('div');
-            titleWrap.className = 'location-title-wrap';
+        // Media box
+        const mediaWrap = document.createElement('div');
+        mediaWrap.className = 'location-media-placeholder';
+        mediaWrap.setAttribute('aria-label', `Preview image for ${loc.name}`);
 
-            const nameEl = document.createElement('h3');
-            nameEl.className = 'location-name';
-            nameEl.textContent = loc.name;
+        if (loc.images && loc.images.length > 0) {
+          const img = document.createElement('img');
+          img.src = loc.images[0];
+          img.alt = loc.name;
+          img.className = 'location-img';
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          img.loading = 'lazy';
+          img.onerror = () => {
+            img.style.display = 'none';
+            const label = document.createElement('span');
+            label.className = 'media-placeholder-label';
+            label.textContent = loc.name ? loc.name.substring(0, 2).toUpperCase() : 'Parking';
+            mediaWrap.appendChild(label);
+          };
+          mediaWrap.appendChild(img);
+        } else {
+          const label = document.createElement('span');
+          label.className = 'media-placeholder-label';
+          label.textContent = loc.name ? loc.name.substring(0, 2).toUpperCase() : 'Parking';
+          mediaWrap.appendChild(label);
+        }
+        card.appendChild(mediaWrap);
 
-            const cityEl = document.createElement('span');
-            cityEl.className = 'location-city';
-            cityEl.textContent = loc.address ? `${loc.address.area || ''}, ${loc.address.city || 'Dhaka'}` : 'Dhaka';
+        // Body
+        const body = document.createElement('div');
+        body.className = 'location-body';
 
-            titleWrap.appendChild(nameEl);
-            titleWrap.appendChild(cityEl);
-            body.appendChild(titleWrap);
+        const titleWrap = document.createElement('div');
+        titleWrap.className = 'location-title-wrap';
 
-            // Details (available slots + hourly rate)
-            const details = document.createElement('div');
-            details.className = 'location-details';
+        const nameEl = document.createElement('h3');
+        nameEl.className = 'location-name';
+        nameEl.textContent = loc.name;
 
-            const slotsEl = document.createElement('p');
-            slotsEl.className = 'location-slots';
-            const availCount = typeof loc.availableSlots === 'number' ? loc.availableSlots : loc.totalSlots;
-            slotsEl.textContent = `${availCount} slots available`;
+        const cityEl = document.createElement('span');
+        cityEl.className = 'location-city';
+        const areaStr = loc.address && loc.address.area ? loc.address.area : '';
+        const cityStr = loc.address && loc.address.city ? loc.address.city : 'Dhaka';
+        cityEl.textContent = areaStr ? `${areaStr}, ${cityStr}` : cityStr;
 
-            const rateEl = document.createElement('p');
-            rateEl.className = 'location-rate';
-            rateEl.textContent = `From ৳${loc.fromPrice || 30}/hour`;
+        titleWrap.appendChild(nameEl);
+        titleWrap.appendChild(cityEl);
+        body.appendChild(titleWrap);
 
-            details.appendChild(slotsEl);
-            details.appendChild(rateEl);
-            body.appendChild(details);
+        // Details (available slots + hourly rate)
+        const details = document.createElement('div');
+        details.className = 'location-details';
 
-            // Action link
-            const actionDiv = document.createElement('div');
-            actionDiv.className = 'location-action';
+        const slotsEl = document.createElement('p');
+        slotsEl.className = 'location-slots';
+        const total = typeof loc.totalSlots === 'number' ? loc.totalSlots : 0;
+        const avail = typeof loc.availableSlots === 'number' ? loc.availableSlots : total;
+        slotsEl.textContent = `${avail} / ${total} bays available`;
 
-            const link = document.createElement('a');
-            link.href = `pages/parking-details.html?id=${loc._id}`;
-            link.className = 'location-link';
-            link.textContent = 'View Parking →';
+        const rateEl = document.createElement('p');
+        rateEl.className = 'location-rate';
+        rateEl.textContent = `From ৳${loc.fromPrice || 30}/hour`;
 
-            actionDiv.appendChild(link);
-            body.appendChild(actionDiv);
+        details.appendChild(slotsEl);
+        details.appendChild(rateEl);
+        body.appendChild(details);
 
-            card.appendChild(body);
-            grid.appendChild(card);
-          });
+        // Action link
+        const actionDiv = document.createElement('div');
+        actionDiv.className = 'location-action';
+
+        const link = document.createElement('a');
+        link.href = `pages/parking-details.html?id=${loc._id}`;
+        link.className = 'location-link';
+        link.textContent = 'View Parking →';
+
+        actionDiv.appendChild(link);
+        body.appendChild(actionDiv);
+
+        card.appendChild(body);
+        grid.appendChild(card);
+      });
+    }
+  } catch (err) {
+    console.warn('Could not load dynamic locations, preserving fallback:', err);
+  }
+}
+
+/**
+ * Loads dynamic pricing from /api/public/pricing
+ */
+async function loadDynamicPricing() {
+  if (typeof apiRequest !== 'function') return;
+
+  try {
+    const res = await apiRequest('/public/pricing');
+    if (!res || !res.success || !res.pricing) return;
+
+    const { rates, freeCancellationHours } = res.pricing;
+
+    // 1. Hourly Card Elements
+    const hourlyAmt = document.getElementById('pricing-hourly-amount');
+    const hourlySub = document.getElementById('pricing-hourly-subrates');
+    const cancelFeature = document.getElementById('pricing-cancellation-feature');
+
+    if (rates && rates.hourly) {
+      if (hourlyAmt && rates.hourly.car != null) {
+        hourlyAmt.textContent = `৳${rates.hourly.car}`;
+      }
+      if (hourlySub) {
+        const parts = [];
+        if (rates.hourly.motorcycle != null) parts.push(`Motorcycle: ৳${rates.hourly.motorcycle}/hr`);
+        if (rates.hourly.suv != null) parts.push(`SUV: ৳${rates.hourly.suv}/hr`);
+        if (parts.length > 0) {
+          hourlySub.textContent = parts.join(' • ');
         }
       }
-    } catch (err) {
-      console.error('Failed to load live landing page locations, preserving static fallback:', err);
     }
+
+    if (cancelFeature && freeCancellationHours != null) {
+      cancelFeature.textContent = `Free cancellation up to ${freeCancellationHours} hrs before`;
+    }
+
+    // 2. Daily Card Elements
+    const dailyAmt = document.getElementById('pricing-daily-amount');
+    const dailySub = document.getElementById('pricing-daily-subrates');
+
+    if (rates && rates.daily) {
+      if (dailyAmt && rates.daily.car != null) {
+        dailyAmt.textContent = `৳${rates.daily.car}`;
+      }
+      if (dailySub) {
+        const parts = [];
+        if (rates.daily.motorcycle != null) parts.push(`Motorcycle: ৳${rates.daily.motorcycle}/day`);
+        if (rates.daily.suv != null) parts.push(`SUV: ৳${rates.daily.suv}/day`);
+        if (parts.length > 0) {
+          dailySub.textContent = parts.join(' • ');
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Could not load dynamic pricing, preserving fallback values:', err);
   }
-});
+}
