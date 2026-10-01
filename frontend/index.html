@@ -325,69 +325,100 @@
     <!-- Available Parking Locations Section -->
     <section class="locations" id="parking-locations" aria-labelledby="locations-title">
       <div class="container">
-        <header class="section-header">
-          <p class="section-eyebrow">Prime Destinations</p>
-          <h2 class="section-title" id="locations-title">Available Parking Locations</h2>
-          <p class="section-description">Select from verified multi-tier parking facilities across the capital.</p>
+        <header class="section-header is-split">
+          <div class="section-header-left">
+            <p class="section-eyebrow">OUR LOCATIONS</p>
+            <h2 class="section-title" id="locations-title">Available Parking Locations</h2>
+          </div>
+          <div class="section-header-right">
+            <a href="pages/parking.html" class="btn-locations-viewall">
+              <span>View All Locations</span>
+              <span class="btn-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
         </header>
 
         <div class="locations-grid" id="landing-locations-grid">
           <!-- Location 1 -->
           <article class="location-card">
-            <div class="location-media-placeholder" aria-label="Facility preview placeholder">
-              <span class="media-placeholder-label">Image</span>
+            <div class="location-media-placeholder">
+              <img src="images/hero-parking-smart.jpg" alt="Banani Central Parking facility preview" class="location-img" loading="lazy">
+              <span class="location-badge is-available">🟢 Available</span>
             </div>
             <div class="location-body">
               <div class="location-title-wrap">
-                <h3 class="location-name">Bashundhara City Parking</h3>
-                <span class="location-city">Dhaka</span>
+                <h3 class="location-name">Banani Central Parking</h3>
+                <span class="location-city">📍 Banani, Dhaka</span>
               </div>
-              <div class="location-details">
-                <p class="location-slots">38 slots available</p>
-                <p class="location-rate">From ৳50/hour</p>
+              <div class="location-price-action">
+                <div class="location-rate-wrap">
+                  <span class="location-rate-amount">৳120</span>
+                  <span class="location-rate-unit">/ hour</span>
+                </div>
+                <a href="pages/parking.html" class="btn-location-book">Book Now →</a>
               </div>
-              <div class="location-action">
-                <a href="#parking" class="location-link">View Parking &rarr;</a>
+              <div class="location-features-meta">
+                <span>Indoor</span>
+                <span class="meta-dot">•</span>
+                <span>Security</span>
+                <span class="meta-dot">•</span>
+                <span>24/7</span>
               </div>
             </div>
           </article>
 
           <!-- Location 2 -->
           <article class="location-card">
-            <div class="location-media-placeholder" aria-label="Facility preview placeholder">
-              <span class="media-placeholder-label">Image</span>
+            <div class="location-media-placeholder">
+              <img src="images/hero-parking.jpg" alt="Gulshan Lake Parking facility preview" class="location-img" loading="lazy">
+              <span class="location-badge is-available">🟢 Available</span>
             </div>
             <div class="location-body">
               <div class="location-title-wrap">
-                <h3 class="location-name">Gulshan Avenue Parking</h3>
-                <span class="location-city">Dhaka</span>
+                <h3 class="location-name">Gulshan Lake Parking</h3>
+                <span class="location-city">📍 Gulshan, Dhaka</span>
               </div>
-              <div class="location-details">
-                <p class="location-slots">22 slots available</p>
-                <p class="location-rate">From ৳60/hour</p>
+              <div class="location-price-action">
+                <div class="location-rate-wrap">
+                  <span class="location-rate-amount">৳150</span>
+                  <span class="location-rate-unit">/ hour</span>
+                </div>
+                <a href="pages/parking.html" class="btn-location-book">Book Now →</a>
               </div>
-              <div class="location-action">
-                <a href="#parking" class="location-link">View Parking &rarr;</a>
+              <div class="location-features-meta">
+                <span>Indoor</span>
+                <span class="meta-dot">•</span>
+                <span>CCTV</span>
+                <span class="meta-dot">•</span>
+                <span>24/7</span>
               </div>
             </div>
           </article>
 
           <!-- Location 3 -->
           <article class="location-card">
-            <div class="location-media-placeholder" aria-label="Facility preview placeholder">
-              <span class="media-placeholder-label">Image</span>
+            <div class="location-media-placeholder">
+              <img src="images/hero-parking-smart.jpg" alt="Dhanmondi Parking facility preview" class="location-img" loading="lazy">
+              <span class="location-badge is-few">🔴 Few Slots Left</span>
             </div>
             <div class="location-body">
               <div class="location-title-wrap">
-                <h3 class="location-name">Dhanmondi Lake Parking</h3>
-                <span class="location-city">Dhaka</span>
+                <h3 class="location-name">Dhanmondi Parking</h3>
+                <span class="location-city">📍 Dhanmondi, Dhaka</span>
               </div>
-              <div class="location-details">
-                <p class="location-slots">15 slots available</p>
-                <p class="location-rate">From ৳45/hour</p>
+              <div class="location-price-action">
+                <div class="location-rate-wrap">
+                  <span class="location-rate-amount">৳100</span>
+                  <span class="location-rate-unit">/ hour</span>
+                </div>
+                <a href="pages/parking.html" class="btn-location-book">Book Now →</a>
               </div>
-              <div class="location-action">
-                <a href="#parking" class="location-link">View Parking &rarr;</a>
+              <div class="location-features-meta">
+                <span>Indoor</span>
+                <span class="meta-dot">•</span>
+                <span>Security</span>
+                <span class="meta-dot">•</span>
+                <span>24/7</span>
               </div>
             </div>
           </article>
@@ -486,94 +517,156 @@
       </div>
     </section>
 
-    <!-- About Section -->
+    <!-- About Section: Your Smart Parking Partner -->
     <section class="about" id="about" aria-labelledby="about-title">
       <div class="container">
-        <div class="about-container">
-          <header class="section-header">
-            <p class="section-eyebrow">Our Purpose</p>
-            <h2 class="section-title" id="about-title">About Smart Parking</h2>
-          </header>
-
-          <div class="about-editorial">
+        <div class="about-grid">
+          <!-- Left Column: Editorial Content & Stats -->
+          <div class="about-content">
+            <p class="section-eyebrow">ABOUT US</p>
+            <h2 class="section-title" id="about-title">Your Smart Parking<br>Partner</h2>
             <p class="about-lead">
-              Urban transit demands predictability. Smart Parking was conceived to eliminate the friction and congestion associated with destination parking across dense metropolitan centers. By digitizing slot inventories in real time and enabling deliberate advance reservations, we transform unpredictable urban arrivals into calm, seamless experiences. Our infrastructure connects drivers directly with verified facility managers, ensuring transparency, security, and fair pricing at every tier. We believe city infrastructure should serve people with quiet efficiency.
+              We are on a mission to make urban parking simple, efficient and stress-free. Our smart parking solution helps drivers find and book parking slots in advance, saving time and reducing congestion in the city.
             </p>
+
+            <!-- 3 Key Stats -->
+            <div class="about-stats-row">
+              <div class="about-stat-item">
+                <span class="about-stat-icon" aria-hidden="true">📍</span>
+                <div class="about-stat-info">
+                  <span class="about-stat-number">50+</span>
+                  <span class="about-stat-label">Locations</span>
+                </div>
+              </div>
+              <div class="about-stat-item">
+                <span class="about-stat-icon" aria-hidden="true">👥</span>
+                <div class="about-stat-info">
+                  <span class="about-stat-number">10K+</span>
+                  <span class="about-stat-label">Happy Customers</span>
+                </div>
+              </div>
+              <div class="about-stat-item">
+                <span class="about-stat-icon" aria-hidden="true">⭐</span>
+                <div class="about-stat-info">
+                  <span class="about-stat-number">4.8/5</span>
+                  <span class="about-stat-label">Average Rating</span>
+                </div>
+              </div>
+            </div>
+
             <div class="about-action">
-              <a href="#contact" class="about-link">Get in touch &rarr;</a>
+              <a href="pages/parking.html" class="btn-hero-secondary">
+                <span>Learn More</span>
+                <span class="btn-arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right Column: Visual Frame with Floating Card -->
+          <div class="about-media-wrapper">
+            <div class="about-image-frame">
+              <img src="images/hero-parking.jpg" alt="Modern automated smart parking garage operations" class="about-img" loading="lazy">
+              
+              <!-- Floating Card Badge -->
+              <div class="about-float-card">
+                <div class="about-float-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+                </div>
+                <div>
+                  <div class="about-float-title">A Smarter Way to Park in the City</div>
+                  <div class="about-float-sub">Convenient. Secure. Reliable.</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Contact Section -->
+    <!-- Contact Section: Contact Us -->
     <section class="contact" id="contact" aria-labelledby="contact-title">
       <div class="container">
-        <header class="section-header">
-          <p class="section-eyebrow">Direct Inquiries</p>
-          <h2 class="section-title" id="contact-title">Get in Touch</h2>
-        </header>
-
         <div class="contact-grid">
-          <!-- Left Column: Details -->
+          <!-- Left Column: Details & Info Cards -->
           <div class="contact-info">
-            <p class="contact-intro">
-              Have questions regarding facility onboarding, corporate parking allotments, or reservation support? Reach out to our operational team directly.
-            </p>
+            <div class="contact-header">
+              <p class="section-eyebrow">GET IN TOUCH</p>
+              <h2 class="section-title" id="contact-title">Contact Us</h2>
+              <p class="contact-intro">
+                Have questions or need support? We're here to help. Reach out to us anytime.
+              </p>
+            </div>
 
-            <div class="contact-details">
-              <div class="contact-detail-item">
-                <span class="contact-detail-label">Email</span>
-                <a href="mailto:hello@smartparking.example" class="contact-detail-value">hello@smartparking.example</a>
+            <div class="contact-cards-list">
+              <div class="contact-card-item">
+                <div class="contact-card-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </div>
+                <div class="contact-card-text">
+                  <a href="tel:+8801234567890" class="contact-card-main">+880 1234 567890</a>
+                  <span class="contact-card-sub">Sun - Sat, 9:00 AM - 10:00 PM</span>
+                </div>
               </div>
 
-              <div class="contact-detail-item">
-                <span class="contact-detail-label">Phone</span>
-                <a href="tel:+880-XXX-XXXXXX" class="contact-detail-value">+880-XXX-XXXXXX</a>
+              <div class="contact-card-item">
+                <div class="contact-card-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </div>
+                <div class="contact-card-text">
+                  <a href="mailto:support@smartparking.com" class="contact-card-main">support@smartparking.com</a>
+                  <span class="contact-card-sub">We reply within 24 hours</span>
+                </div>
               </div>
 
-              <div class="contact-detail-item">
-                <span class="contact-detail-label">Location</span>
-                <span class="contact-detail-value">Dhaka, Bangladesh</span>
+              <div class="contact-card-item">
+                <div class="contact-card-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
+                <div class="contact-card-text">
+                  <span class="contact-card-main">House 12, Road 5, Banani</span>
+                  <span class="contact-card-sub">Dhaka, Bangladesh</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Right Column: Form -->
+          <!-- Right Column: Contact Form Card -->
           <div class="contact-form-wrapper">
-            <form class="contact-form" id="contact-form" novalidate>
-              <div class="form-group">
-                <label for="contact-name" class="form-label">Full Name</label>
-                <input 
-                  type="text" 
-                  id="contact-name" 
-                  name="name" 
-                  class="form-input" 
-                  placeholder="Your full name" 
-                  required>
-              </div>
+            <form class="contact-card-form" id="contact-form" novalidate>
+              <div class="form-row-two">
+                <div class="form-group">
+                  <label for="contact-name" class="form-label">Full Name</label>
+                  <input 
+                    type="text" 
+                    id="contact-name" 
+                    name="name" 
+                    class="form-input" 
+                    placeholder="Enter your name" 
+                    required>
+                </div>
 
-              <div class="form-group">
-                <label for="contact-email" class="form-label">Email Address</label>
-                <input 
-                  type="email" 
-                  id="contact-email" 
-                  name="email" 
-                  class="form-input" 
-                  placeholder="name@example.com" 
-                  required>
+                <div class="form-group">
+                  <label for="contact-email" class="form-label">Email Address</label>
+                  <input 
+                    type="email" 
+                    id="contact-email" 
+                    name="email" 
+                    class="form-input" 
+                    placeholder="Enter your email" 
+                    required>
+                </div>
               </div>
 
               <div class="form-group">
                 <label for="contact-subject" class="form-label">Subject</label>
-                <input 
-                  type="text" 
-                  id="contact-subject" 
-                  name="subject" 
-                  class="form-input" 
-                  placeholder="Inquiry topic" 
-                  required>
+                <select id="contact-subject" name="subject" class="form-select" required>
+                  <option value="" disabled selected>Select a subject</option>
+                  <option value="General Inquiry">General Inquiry</option>
+                  <option value="Booking Support">Booking Support</option>
+                  <option value="Facility Partnership">Facility Partnership</option>
+                  <option value="Corporate Allotment">Corporate Allotment</option>
+                  <option value="Feedback">Feedback</option>
+                </select>
               </div>
 
               <div class="form-group">
@@ -582,13 +675,16 @@
                   id="contact-message" 
                   name="message" 
                   class="form-textarea" 
-                  rows="5" 
-                  placeholder="How can we assist you?" 
+                  rows="4" 
+                  placeholder="Type your message here..." 
                   required></textarea>
               </div>
 
               <div class="form-action">
-                <button type="submit" class="btn-submit">Send Message</button>
+                <button type="submit" class="btn-contact-submit">
+                  <span>Send Message</span>
+                  <span class="btn-arrow" aria-hidden="true">→</span>
+                </button>
               </div>
             </form>
           </div>

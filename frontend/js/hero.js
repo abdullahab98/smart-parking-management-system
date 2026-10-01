@@ -145,29 +145,35 @@ async function loadDynamicLocations() {
         mediaWrap.className = 'location-media-placeholder';
         mediaWrap.setAttribute('aria-label', `Preview image for ${loc.name}`);
 
-        if (loc.images && loc.images.length > 0) {
-          const img = document.createElement('img');
-          img.src = loc.images[0];
-          img.alt = loc.name;
-          img.className = 'location-img';
-          img.style.width = '100%';
-          img.style.height = '100%';
-          img.style.objectFit = 'cover';
-          img.loading = 'lazy';
-          img.onerror = () => {
-            img.style.display = 'none';
-            const label = document.createElement('span');
-            label.className = 'media-placeholder-label';
-            label.textContent = loc.name ? loc.name.substring(0, 2).toUpperCase() : 'Parking';
-            mediaWrap.appendChild(label);
-          };
-          mediaWrap.appendChild(img);
+        const total = typeof loc.totalSlots === 'number' ? loc.totalSlots : 0;
+        const avail = typeof loc.availableSlots === 'number' ? loc.availableSlots : total;
+
+        const img = document.createElement('img');
+        const defaultImg = (loc.name && loc.name.toLowerCase().includes('gulshan')) 
+          ? 'images/hero-parking.jpg' 
+          : 'images/hero-parking-smart.jpg';
+        img.src = (loc.images && loc.images.length > 0) ? loc.images[0] : defaultImg;
+        img.alt = loc.name;
+        img.className = 'location-img';
+        img.loading = 'lazy';
+        img.onerror = () => {
+          img.src = defaultImg;
+        };
+        mediaWrap.appendChild(img);
+
+        // Status Badge
+        const badge = document.createElement('span');
+        if (avail <= 5 && avail > 0) {
+          badge.className = 'location-badge is-few';
+          badge.textContent = '🔴 Few Slots Left';
+        } else if (avail === 0) {
+          badge.className = 'location-badge is-few';
+          badge.textContent = '⚪ Fully Booked';
         } else {
-          const label = document.createElement('span');
-          label.className = 'media-placeholder-label';
-          label.textContent = loc.name ? loc.name.substring(0, 2).toUpperCase() : 'Parking';
-          mediaWrap.appendChild(label);
+          badge.className = 'location-badge is-available';
+          badge.textContent = '🟢 Available';
         }
+        mediaWrap.appendChild(badge);
         card.appendChild(mediaWrap);
 
         // Body
@@ -185,41 +191,44 @@ async function loadDynamicLocations() {
         cityEl.className = 'location-city';
         const areaStr = loc.address && loc.address.area ? loc.address.area : '';
         const cityStr = loc.address && loc.address.city ? loc.address.city : 'Dhaka';
-        cityEl.textContent = areaStr ? `${areaStr}, ${cityStr}` : cityStr;
+        cityEl.textContent = areaStr ? `📍 ${areaStr}, ${cityStr}` : `📍 ${cityStr}`;
 
         titleWrap.appendChild(nameEl);
         titleWrap.appendChild(cityEl);
         body.appendChild(titleWrap);
 
-        // Details (available slots + hourly rate)
-        const details = document.createElement('div');
-        details.className = 'location-details';
+        // Price and Action row
+        const priceAction = document.createElement('div');
+        priceAction.className = 'location-price-action';
 
-        const slotsEl = document.createElement('p');
-        slotsEl.className = 'location-slots';
-        const total = typeof loc.totalSlots === 'number' ? loc.totalSlots : 0;
-        const avail = typeof loc.availableSlots === 'number' ? loc.availableSlots : total;
-        slotsEl.textContent = `${avail} / ${total} bays available`;
+        const rateWrap = document.createElement('div');
+        rateWrap.className = 'location-rate-wrap';
+        
+        const rateAmount = document.createElement('span');
+        rateAmount.className = 'location-rate-amount';
+        rateAmount.textContent = `৳${loc.fromPrice || 120}`;
 
-        const rateEl = document.createElement('p');
-        rateEl.className = 'location-rate';
-        rateEl.textContent = `From ৳${loc.fromPrice || 30}/hour`;
+        const rateUnit = document.createElement('span');
+        rateUnit.className = 'location-rate-unit';
+        rateUnit.textContent = '/ hour';
 
-        details.appendChild(slotsEl);
-        details.appendChild(rateEl);
-        body.appendChild(details);
+        rateWrap.appendChild(rateAmount);
+        rateWrap.appendChild(rateUnit);
+        priceAction.appendChild(rateWrap);
 
-        // Action link
-        const actionDiv = document.createElement('div');
-        actionDiv.className = 'location-action';
+        const bookBtn = document.createElement('a');
+        bookBtn.href = `pages/parking-details.html?id=${loc._id}`;
+        bookBtn.className = 'btn-location-book';
+        bookBtn.textContent = 'Book Now →';
+        priceAction.appendChild(bookBtn);
 
-        const link = document.createElement('a');
-        link.href = `pages/parking-details.html?id=${loc._id}`;
-        link.className = 'location-link';
-        link.textContent = 'View Parking →';
+        body.appendChild(priceAction);
 
-        actionDiv.appendChild(link);
-        body.appendChild(actionDiv);
+        // Meta features
+        const featuresMeta = document.createElement('div');
+        featuresMeta.className = 'location-features-meta';
+        featuresMeta.innerHTML = '<span>Indoor</span><span class="meta-dot">•</span><span>Security</span><span class="meta-dot">•</span><span>24/7</span>';
+        body.appendChild(featuresMeta);
 
         card.appendChild(body);
         grid.appendChild(card);
