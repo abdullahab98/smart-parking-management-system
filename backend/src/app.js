@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import vehicleRoutes from './routes/vehicleRoutes.js';
 import parkingRoutes from './routes/parkingRoutes.js';
@@ -11,18 +13,28 @@ import userRoutes from './routes/userRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import managerRoutes from './routes/managerRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import { requireAuth } from './middleware/authMiddleware.js';
 import { globalLimiter } from './middleware/rateLimiters.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendPath = path.resolve(__dirname, '../../frontend');
+
 const app = express();
 
-// Security Headers
-app.use(helmet());
+// Security Headers (relaxed CSP for local dev & Google Fonts)
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+  })
+);
 
 // Cross-Origin Resource Sharing
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5555',
+    origin: (origin, callback) => callback(null, true),
     credentials: true
   })
 );
@@ -30,6 +42,9 @@ app.use(
 // Body Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve Frontend Static Files
+app.use(express.static(frontendPath));
 
 // Global Rate Limiting across all API routes (100 req/15min, higher in dev)
 app.use('/api', globalLimiter);
@@ -53,8 +68,17 @@ app.use('/api/parking', parkingRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/manager', managerRoutes);
+app.use('/api/admin', adminRoutes);
 
-// 404 Not Found Handler
+// Fallback to frontend index for non-API GET requests
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
+// 404 Not Found Handler for unmatched API routes
 app.use((req, res) => {
   res.status(404).json({
     success: false,

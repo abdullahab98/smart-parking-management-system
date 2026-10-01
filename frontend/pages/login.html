@@ -128,7 +128,13 @@
       function getValidRedirectTarget() {
         const urlParams = new URLSearchParams(window.location.search);
         const next = urlParams.get('next');
-        const defaultTarget = siteRoot + 'pages/customer/dashboard.html';
+        const user = typeof getUser === 'function' ? getUser() : null;
+        let defaultTarget = siteRoot + 'pages/customer/dashboard.html';
+        if (user && user.role === 'ADMIN') {
+          defaultTarget = siteRoot + 'pages/admin/dashboard.html';
+        } else if (user && user.role === 'MANAGER') {
+          defaultTarget = siteRoot + 'pages/manager/dashboard.html';
+        }
         if (!next) return defaultTarget;
 
         if (

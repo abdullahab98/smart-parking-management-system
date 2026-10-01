@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parking Facilities &amp; Slots — Smart Parking Admin</title>
+  <meta name="description" content="Configure commercial parking locations, appoint managers, and manage bay inventory.">
+  <meta name="theme-color" content="#A8532E">
+
+  <!-- Google Fonts: Fraunces & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="../../css/global.css">
+  <link rel="stylesheet" href="../../css/navbar.css">
+  <link rel="stylesheet" href="../../css/components.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/manager.css">
+  <link rel="stylesheet" href="../../css/responsive.css">
+</head>
+<body>
+  <!-- Scripts -->
+  <script src="../../js/config.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/ui.js"></script>
+  <script src="../../js/admin-shell.js"></script>
+
+  <script>
+    async function initAdminFacilities() {
+      try {
+        const appContent = renderAdminShell('facilities');
+        if (!appContent) return;
+
+        // 1. Header
+        const header = document.createElement('header');
+        header.className = 'app-page-header';
+
+        const titleWrap = document.createElement('div');
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'app-page-eyebrow';
+        eyebrow.textContent = 'Infrastructure Oversight';
+
+        const title = document.createElement('h1');
+        title.className = 'app-page-title';
+        title.textContent = 'Parking Facilities & Bays';
+
+        const desc = document.createElement('p');
+        desc.className = 'app-page-desc';
+        desc.textContent = 'Create parking structures, appoint facility managers, and oversee floor and slot layouts.';
+
+        titleWrap.appendChild(eyebrow);
+        titleWrap.appendChild(title);
+        titleWrap.appendChild(desc);
+        header.appendChild(titleWrap);
+        appContent.appendChild(header);
+
+        // Mount Container
+        const container = document.createElement('div');
+        container.id = 'admin-facilities-container';
+        appContent.appendChild(container);
+
+        // Action bar
+        const actionBar = document.createElement('div');
+        actionBar.style.display = 'flex';
+        actionBar.style.justifyContent = 'space-between';
+        actionBar.style.alignItems = 'center';
+        actionBar.style.marginBottom = 'var(--space-5)';
+
+        const countLabel = document.createElement('span');
+        countLabel.id = 'facility-count-label';
+        countLabel.style.fontSize = 'var(--text-sm)';
+        countLabel.style.color = 'var(--color-ink-muted)';
+        countLabel.textContent = 'Loading facilities...';
+        actionBar.appendChild(countLabel);
+
+        const addLocBtn = document.createElement('button');
+        addLocBtn.type = 'button';
+        addLocBtn.className = 'btn btn-primary';
+        addLocBtn.textContent = '+ Add New Facility';
+        addLocBtn.addEventListener('click', () => showAddFacilityModal());
+        actionBar.appendChild(addLocBtn);
+
+        container.appendChild(actionBar);
+
+        // Facilities Grid Mount
+        const grid = document.createElement('div');
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+        grid.style.gap = 'var(--space-4)';
+        container.appendChild(grid);
+
+        let allManagers = [];
+
+        async function loadFacilities() {
+          grid.innerHTML = '<div style="padding: 20px; color: var(--color-ink-muted);">Loading facilities and managers...</div>';
+
+          try {
+            const [locRes, mgrRes] = await Promise.all([
+              apiRequest('/parking/locations'),
+              apiRequest('/admin/managers')
+            ]);
+
+            const locations = locRes.locations || [];
+            allManagers = mgrRes.managers || [];
+
+            countLabel.textContent = `${locations.length} commercial facilities active`;
+            grid.innerHTML = '';
+
+            if (locations.length === 0) {
+              grid.innerHTML = '<div style="padding: 40px; background: #fff; border: 1px solid var(--color-border); grid-column: 1/-1; text-align: center;">No parking facilities configured yet.</div>';
+              return;
+            }
+
+            locations.forEach(loc => {
+              const card = document.createElement('div');
+              card.style.background = '#FFFFFF';
+              card.style.border = '1px solid var(--color-border)';
+              card.style.padding = 'var(--space-5)';
+              card.style.display = 'flex';
+              card.style.flexDirection = 'column';
+              card.style.justifyContent = 'space-between';
+
+              const top = document.createElement('div');
+
+              const statusBadge = document.createElement('span');
+              statusBadge.className = 'badge badge-success';
+              statusBadge.style.fontSize = '10px';
+              statusBadge.style.marginBottom = 'var(--space-2)';
+              statusBadge.style.display = 'inline-block';
+              statusBadge.textContent = loc.status || 'ACTIVE';
+
+              const locName = document.createElement('h2');
+              locName.style.fontFamily = 'var(--font-heading)';
+              locName.style.fontSize = 'var(--text-lg)';
+              locName.style.margin = '0 0 var(--space-2) 0';
+              locName.textContent = loc.name;
+
+              const locAddress = document.createElement('p');
+              locAddress.style.fontSize = 'var(--text-xs)';
+              locAddress.style.color = 'var(--color-ink-muted)';
+              locAddress.style.marginBottom = 'var(--space-3)';
+              const addr = loc.address || {};
+              locAddress.textContent = `${addr.addressLine || ''}, ${addr.area || ''}, ${addr.city || ''}`;
+
+              // Managers Assigned
+              const mgrSection = document.createElement('div');
+              mgrSection.style.paddingTop = 'var(--space-3)';
+              mgrSection.style.borderTop = '1px solid var(--color-border)';
+              mgrSection.style.marginBottom = 'var(--space-4)';
+
+              const mgrTitle = document.createElement('strong');
+              mgrTitle.style.display = 'block';
+              mgrTitle.style.fontSize = '11px';
+              mgrTitle.style.textTransform = 'uppercase';
+              mgrTitle.style.letterSpacing = '0.05em';
+              mgrTitle.style.color = 'var(--color-ink-muted)';
+              mgrTitle.style.marginBottom = 'var(--space-2)';
+              mgrTitle.textContent = 'Assigned Facility Managers:';
+
+              const mgrList = document.createElement('div');
+              const assigned = loc.managerIds || [];
+              if (assigned.length === 0) {
+                mgrList.innerHTML = '<span style="font-size: 11px; color: #b33;">No manager assigned</span>';
+              } else {
+                mgrList.innerHTML = assigned.map(m => `
+                  <span class="badge" style="background: var(--color-surface); border: 1px solid var(--color-border); font-size: 11px; margin-right: 4px; margin-bottom: 4px; display: inline-block;">
+                    ${m.name || m.email || 'Manager'}
+                  </span>
+                `).join('');
+              }
+
+              mgrSection.appendChild(mgrTitle);
+              mgrSection.appendChild(mgrList);
+
+              top.appendChild(statusBadge);
+              top.appendChild(locName);
+              top.appendChild(locAddress);
+              top.appendChild(mgrSection);
+
+              // Bottom Actions
+              const bottom = document.createElement('div');
+              bottom.style.display = 'flex';
+              bottom.style.gap = 'var(--space-2)';
+              bottom.style.flexWrap = 'wrap';
+
+              const assignBtn = document.createElement('button');
+              assignBtn.type = 'button';
+              assignBtn.className = 'btn btn-secondary';
+              assignBtn.style.fontSize = '11px';
+              assignBtn.style.padding = '4px 8px';
+              assignBtn.textContent = 'Appoint Managers';
+              assignBtn.onclick = () => showAssignManagerModal(loc);
+
+              const viewFloorsBtn = document.createElement('a');
+              viewFloorsBtn.className = 'btn btn-secondary';
+              viewFloorsBtn.style.fontSize = '11px';
+              viewFloorsBtn.style.padding = '4px 8px';
+              viewFloorsBtn.href = `../parking-details.html?id=${loc._id}`;
+              viewFloorsBtn.textContent = 'View Customer Layout';
+
+              bottom.appendChild(assignBtn);
+              bottom.appendChild(viewFloorsBtn);
+
+              card.appendChild(top);
+              card.appendChild(bottom);
+              grid.appendChild(card);
+            });
+
+          } catch (err) {
+            grid.innerHTML = `<div class="error-notice">Failed to load facilities: ${err.message}</div>`;
+          }
+        }
+
+        function showAddFacilityModal() {
+          const overlay = document.createElement('div');
+          overlay.style.position = 'fixed';
+          overlay.style.inset = '0';
+          overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+          overlay.style.display = 'flex';
+          overlay.style.alignItems = 'center';
+          overlay.style.justifyContent = 'center';
+          overlay.style.zIndex = '9999';
+
+          const modal = document.createElement('div');
+          modal.style.background = '#FFFFFF';
+          modal.style.border = '1px solid var(--color-border)';
+          modal.style.padding = 'var(--space-6)';
+          modal.style.width = '100%';
+          modal.style.maxWidth = '500px';
+          modal.style.boxSizing = 'border-box';
+
+          modal.innerHTML = `
+            <h2 style="font-family: var(--font-heading); font-size: var(--text-xl); margin-bottom: var(--space-4);">Add Commercial Facility</h2>
+            <form id="create-facility-form">
+              <div style="margin-bottom: var(--space-3);">
+                <label style="display:block; font-size: var(--text-xs); font-weight: 600; margin-bottom: 4px;">Facility Name *</label>
+                <input type="text" name="name" placeholder="e.g. Uttara Commercial Parking" required class="form-input" style="width:100%; box-sizing:border-box;">
+              </div>
+              <div style="margin-bottom: var(--space-3);">
+                <label style="display:block; font-size: var(--text-xs); font-weight: 600; margin-bottom: 4px;">Address Line *</label>
+                <input type="text" name="addressLine" placeholder="e.g. Sector 3, Road 7" required class="form-input" style="width:100%; box-sizing:border-box;">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-3);">
+                <div>
+                  <label style="display:block; font-size: var(--text-xs); font-weight: 600; margin-bottom: 4px;">Area *</label>
+                  <input type="text" name="area" placeholder="e.g. Uttara" required class="form-input" style="width:100%; box-sizing:border-box;">
+                </div>
+                <div>
+                  <label style="display:block; font-size: var(--text-xs); font-weight: 600; margin-bottom: 4px;">City</label>
+                  <input type="text" name="city" value="Dhaka" class="form-input" style="width:100%; box-sizing:border-box;">
+                </div>
+              </div>
+              <div style="margin-bottom: var(--space-4);">
+                <label style="display:block; font-size: var(--text-xs); font-weight: 600; margin-bottom: 4px;">Description</label>
+                <textarea name="description" rows="2" class="form-input" style="width:100%; box-sizing:border-box;" placeholder="Multi-level secure parking..."></textarea>
+              </div>
+              <div style="display:flex; justify-content: flex-end; gap: var(--space-3);">
+                <button type="button" id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Facility</button>
+              </div>
+            </form>
+          `;
+
+          overlay.appendChild(modal);
+          document.body.appendChild(overlay);
+
+          modal.querySelector('#modal-cancel-btn').addEventListener('click', () => {
+            document.body.removeChild(overlay);
+          });
+
+          modal.querySelector('#create-facility-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const payload = {
+              name: formData.get('name'),
+              address: {
+                addressLine: formData.get('addressLine'),
+                area: formData.get('area'),
+                city: formData.get('city') || 'Dhaka'
+              },
+              description: formData.get('description'),
+              facilities: ['CCTV Surveillance', '24/7 Security Guard']
+            };
+
+            try {
+              await apiRequest('/parking/locations', 'POST', payload);
+              if (typeof showToast === 'function') showToast('Facility created successfully', 'success');
+              document.body.removeChild(overlay);
+              loadFacilities();
+            } catch (err) {
+              alert('Failed to create facility: ' + err.message);
+            }
+          });
+        }
+
+        function showAssignManagerModal(loc) {
+          const overlay = document.createElement('div');
+          overlay.style.position = 'fixed';
+          overlay.style.inset = '0';
+          overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+          overlay.style.display = 'flex';
+          overlay.style.alignItems = 'center';
+          overlay.style.justifyContent = 'center';
+          overlay.style.zIndex = '9999';
+
+          const modal = document.createElement('div');
+          modal.style.background = '#FFFFFF';
+          modal.style.border = '1px solid var(--color-border)';
+          modal.style.padding = 'var(--space-6)';
+          modal.style.width = '100%';
+          modal.style.maxWidth = '460px';
+          modal.style.boxSizing = 'border-box';
+
+          const assignedIds = (loc.managerIds || []).map(m => m._id || m);
+
+          modal.innerHTML = `
+            <h2 style="font-family: var(--font-heading); font-size: var(--text-xl); margin-bottom: var(--space-2);">Appoint Managers</h2>
+            <p style="font-size: var(--text-xs); color: var(--color-ink-muted); margin-bottom: var(--space-4);">Select managers authorized to oversee <strong>${loc.name}</strong>.</p>
+            <form id="assign-mgr-form">
+              <div style="max-height: 240px; overflow-y: auto; border: 1px solid var(--color-border); padding: 10px; margin-bottom: var(--space-4);">
+                ${allManagers.length === 0 ? '<div style="font-size:12px; color:#888;">No users with MANAGER role available. Promote a user first.</div>' : allManagers.map(m => `
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; cursor: pointer;">
+                    <input type="checkbox" name="managers" value="${m._id}" ${assignedIds.some(id => id.toString() === m._id.toString()) ? 'checked' : ''}>
+                    <div>
+                      <strong>${m.name}</strong> (${m.email})
+                    </div>
+                  </label>
+                `).join('')}
+              </div>
+              <div style="display:flex; justify-content: flex-end; gap: var(--space-3);">
+                <button type="button" id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Assignments</button>
+              </div>
+            </form>
+          `;
+
+          overlay.appendChild(modal);
+          document.body.appendChild(overlay);
+
+          modal.querySelector('#modal-cancel-btn').addEventListener('click', () => {
+            document.body.removeChild(overlay);
+          });
+
+          modal.querySelector('#assign-mgr-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const checked = Array.from(modal.querySelectorAll('input[name="managers"]:checked')).map(cb => cb.value);
+
+            try {
+              await apiRequest(`/admin/locations/${loc._id}/managers`, 'PUT', { managerIds: checked });
+              if (typeof showToast === 'function') showToast('Manager assignments updated', 'success');
+              document.body.removeChild(overlay);
+              loadFacilities();
+            } catch (err) {
+              alert('Failed to assign managers: ' + err.message);
+            }
+          });
+        }
+
+        // Initial Load
+        loadFacilities();
+
+      } catch (err) {
+        console.error('Admin Facilities Init Error:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initAdminFacilities);
+  </script>
+</body>
+</html>
