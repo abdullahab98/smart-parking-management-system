@@ -93,97 +93,58 @@ function renderSiteChrome(activeKey = '') {
   const footerMount = document.getElementById('site-footer');
   if (footerMount) {
     footerMount.className = 'site-footer';
-    footerMount.innerHTML = '';
-
-    const container = document.createElement('div');
-    container.className = 'container';
-
-    const grid = document.createElement('div');
-    grid.className = 'footer-grid';
-
-    // Column 1: Brand & Tagline
-    const brandCol = document.createElement('div');
-    brandCol.className = 'footer-brand-col';
-
-    const fLogo = document.createElement('a');
-    fLogo.href = homeUrl;
-    fLogo.className = 'brand-logo footer-logo';
-    fLogo.textContent = 'Smart Parking';
-
-    const fTagline = document.createElement('p');
-    fTagline.className = 'footer-tagline';
-    fTagline.textContent = 'Curated, reliable urban space reservations designed for intentional mobility.';
-
-    brandCol.appendChild(fLogo);
-    brandCol.appendChild(fTagline);
-    grid.appendChild(brandCol);
-
-    // Columns 2, 3, 4: Company, Product, Legal
-    const cols = [
-      {
-        heading: 'Company',
-        links: [
-          { label: 'About', href: `${homeUrl}#about` },
-          { label: 'Contact', href: `${homeUrl}#contact` }
-        ]
-      },
-      {
-        heading: 'Product',
-        links: [
-          { label: 'Parking Locations', href: `${siteRoot}pages/parking.html` },
-          { label: 'Pricing', href: `${homeUrl}#pricing` },
-          { label: 'How It Works', href: `${homeUrl}#how-it-works` }
-        ]
-      },
-      {
-        heading: 'Legal',
-        links: [
-          { label: 'Privacy', href: `${homeUrl}#privacy` },
-          { label: 'Terms', href: `${homeUrl}#terms` }
-        ]
-      }
-    ];
-
-    cols.forEach((colData) => {
-      const col = document.createElement('div');
-      col.className = 'footer-col';
-
-      const heading = document.createElement('h4');
-      heading.className = 'footer-heading';
-      heading.textContent = colData.heading;
-      col.appendChild(heading);
-
-      const list = document.createElement('ul');
-      list.className = 'footer-links';
-
-      colData.links.forEach((l) => {
-        const item = document.createElement('li');
-        const link = document.createElement('a');
-        link.href = l.href;
-        link.textContent = l.label;
-        item.appendChild(link);
-        list.appendChild(item);
-      });
-
-      col.appendChild(list);
-      grid.appendChild(col);
-    });
-
-    container.appendChild(grid);
-
-    // Footer Bottom Copyright
-    const bottom = document.createElement('div');
-    bottom.className = 'footer-bottom';
-
-    const copyright = document.createElement('p');
-    copyright.className = 'footer-copyright';
-    copyright.textContent = '© 2026 Smart Parking System. All rights reserved.';
-
-    bottom.appendChild(copyright);
-    container.appendChild(bottom);
-
-    footerMount.appendChild(container);
+    footerMount.innerHTML = getSharedFooterHTML(siteRoot);
   }
+}
+
+/**
+ * Returns standardized markup for the unified site footer across all portal and public pages.
+ * @param {string} siteRoot
+ * @returns {string}
+ */
+function getSharedFooterHTML(siteRoot = '../') {
+  const homeUrl = `${siteRoot}index.html`;
+  const parkingUrl = `${siteRoot}pages/parking.html`;
+
+  return `
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand-col">
+          <a href="${homeUrl}" class="brand-logo footer-logo">Smart Parking</a>
+          <p class="footer-tagline">Curated, reliable urban space reservations designed for intentional mobility.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Company</h4>
+          <ul class="footer-links">
+            <li><a href="${homeUrl}#about">About</a></li>
+            <li><a href="${homeUrl}#contact">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Product</h4>
+          <ul class="footer-links">
+            <li><a href="${parkingUrl}">Parking Locations</a></li>
+            <li><a href="${homeUrl}#pricing">Pricing</a></li>
+            <li><a href="${homeUrl}#how-it-works">How It Works</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Legal</h4>
+          <ul class="footer-links">
+            <li><a href="${homeUrl}#privacy">Privacy</a></li>
+            <li><a href="${homeUrl}#terms">Terms</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 Smart Parking System. All rights reserved.</p>
+      </div>
+    </div>
+  `;
 }
 
 // Auto-run on DOMContentLoaded if placeholders exist
@@ -197,4 +158,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 if (typeof window !== 'undefined') {
   window.renderSiteChrome = renderSiteChrome;
+  window.getSharedFooterHTML = getSharedFooterHTML;
 }
