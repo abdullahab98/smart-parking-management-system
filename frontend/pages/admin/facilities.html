@@ -234,6 +234,7 @@
 
           modal.innerHTML = `
             <h2 style="font-family: var(--font-heading); font-size: var(--text-xl); margin-bottom: var(--space-4);">Add Commercial Facility</h2>
+            <div id="modal-error-notice" class="error-notice" style="display: none; margin-bottom: var(--space-3);"></div>
             <form id="create-facility-form">
               <div style="margin-bottom: var(--space-3);">
                 <label style="display:block; font-size: var(--text-xs); font-weight: 600; margin-bottom: 4px;">Facility Name *</label>
@@ -253,13 +254,17 @@
                   <input type="text" name="city" value="Dhaka" class="form-input" style="width:100%; box-sizing:border-box;">
                 </div>
               </div>
+              <div style="margin-bottom: var(--space-3);">
+                <label style="display:block; font-size: var(--text-xs); font-weight: 600; margin-bottom: 4px;">Initial Parking Bays (Level 1)</label>
+                <input type="number" name="initialBays" value="10" min="1" max="50" class="form-input" style="width:100%; box-sizing:border-box;">
+              </div>
               <div style="margin-bottom: var(--space-4);">
                 <label style="display:block; font-size: var(--text-xs); font-weight: 600; margin-bottom: 4px;">Description</label>
                 <textarea name="description" rows="2" class="form-input" style="width:100%; box-sizing:border-box;" placeholder="Multi-level secure parking..."></textarea>
               </div>
               <div style="display:flex; justify-content: flex-end; gap: var(--space-3);">
                 <button type="button" id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Facility</button>
+                <button type="submit" id="modal-submit-btn" class="btn btn-primary">Create Facility</button>
               </div>
             </form>
           `;
@@ -271,8 +276,15 @@
             document.body.removeChild(overlay);
           });
 
+          const errNotice = modal.querySelector('#modal-error-notice');
+          const submitBtn = modal.querySelector('#modal-submit-btn');
+
           modal.querySelector('#create-facility-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            errNotice.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+
             const formData = new FormData(e.target);
             const payload = {
               name: formData.get('name'),
@@ -281,17 +293,24 @@
                 area: formData.get('area'),
                 city: formData.get('city') || 'Dhaka'
               },
+              initialBays: Number(formData.get('initialBays')) || 10,
               description: formData.get('description'),
               facilities: ['CCTV Surveillance', '24/7 Security Guard']
             };
 
             try {
-              await apiRequest('/parking/locations', 'POST', payload);
+              await apiRequest('/parking/locations', {
+                method: 'POST',
+                body: payload
+              });
               if (typeof showToast === 'function') showToast('Facility created successfully', 'success');
               document.body.removeChild(overlay);
-              loadFacilities();
+              await loadFacilities();
             } catch (err) {
-              alert('Failed to create facility: ' + err.message);
+              errNotice.textContent = err.message || 'Failed to create facility';
+              errNotice.style.display = 'block';
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Create Facility';
             }
           });
         }
@@ -349,10 +368,13 @@
             const checked = Array.from(modal.querySelectorAll('input[name="managers"]:checked')).map(cb => cb.value);
 
             try {
-              await apiRequest(`/admin/locations/${loc._id}/managers`, 'PUT', { managerIds: checked });
+              await apiRequest(`/admin/locations/${loc._id}/managers`, {
+                method: 'PUT',
+                body: { managerIds: checked }
+              });
               if (typeof showToast === 'function') showToast('Manager assignments updated', 'success');
               document.body.removeChild(overlay);
-              loadFacilities();
+              await loadFacilities();
             } catch (err) {
               alert('Failed to assign managers: ' + err.message);
             }

@@ -49,6 +49,47 @@ export const createLocation = async (req, res) => {
       status: status || 'ACTIVE'
     });
 
+    // Auto-initialize default Floor 1, Unit A, and parking bays for immediate operability
+    try {
+      const floor = await Floor.create({
+        name: 'Floor 1',
+        floorNumber: 1,
+        parkingLocationId: location._id,
+        status: 'ACTIVE'
+      });
+
+      const unit = await Unit.create({
+        name: 'Unit A',
+        code: 'A',
+        floorId: floor._id,
+        status: 'ACTIVE'
+      });
+
+      const initialBayCount = Math.max(1, Math.min(50, Number(req.body.initialBays) || 10));
+      const slotsToInsert = [];
+      for (let i = 1; i <= initialBayCount; i++) {
+        const slotNumber = `1A-${String(i).padStart(2, '0')}`;
+        let vehicleTypes = ['CAR', 'SUV'];
+        if (i >= 7 && i <= 8) vehicleTypes = ['MOTORCYCLE'];
+        else if (i === 9) vehicleTypes = ['CAR', 'SUV', 'MICROBUS', 'VAN'];
+
+        slotsToInsert.push({
+          locationId: location._id,
+          floorId: floor._id,
+          unitId: unit._id,
+          slotNumber,
+          vehicleTypes,
+          status: 'AVAILABLE',
+          position: { x: (i - 1) * 10, y: 10 }
+        });
+      }
+      if (slotsToInsert.length > 0) {
+        await ParkingSlot.insertMany(slotsToInsert);
+      }
+    } catch (subErr) {
+      console.warn('[Parking Controller] Initial floor/slot auto-creation note:', subErr.message);
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Parking location created successfully.',

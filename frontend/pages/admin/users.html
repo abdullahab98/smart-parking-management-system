@@ -260,7 +260,10 @@
               const userId = e.target.getAttribute('data-id');
               const newRole = e.target.value;
               try {
-                await apiRequest(`/admin/users/${userId}/role`, 'PUT', { role: newRole });
+                await apiRequest(`/admin/users/${userId}/role`, {
+                  method: 'PUT',
+                  body: { role: newRole }
+                });
                 if (typeof showToast === 'function') showToast(`Role updated to ${newRole}`, 'success');
               } catch (err) {
                 alert('Failed to update role: ' + err.message);
@@ -274,7 +277,10 @@
               const userId = e.target.getAttribute('data-id');
               const newStatus = e.target.value;
               try {
-                await apiRequest(`/admin/users/${userId}/status`, 'PUT', { status: newStatus });
+                await apiRequest(`/admin/users/${userId}/status`, {
+                  method: 'PUT',
+                  body: { status: newStatus }
+                });
                 if (typeof showToast === 'function') showToast(`Status updated to ${newStatus}`, 'success');
               } catch (err) {
                 alert('Failed to update status: ' + err.message);
@@ -349,7 +355,10 @@
             const payload = Object.fromEntries(formData.entries());
 
             try {
-              await apiRequest('/admin/users', 'POST', payload);
+              await apiRequest('/admin/users', {
+                method: 'POST',
+                body: payload
+              });
               if (typeof showToast === 'function') showToast('Account created successfully', 'success');
               document.body.removeChild(overlay);
               fetchUsers(1);

@@ -188,7 +188,10 @@
             };
 
             try {
-              await apiRequest('/admin/pricing', 'PUT', payload);
+              await apiRequest('/admin/pricing', {
+                method: 'PUT',
+                body: payload
+              });
               if (typeof showToast === 'function') showToast('Pricing rules saved successfully', 'success');
               else alert('Pricing rules saved successfully.');
             } catch (err) {
