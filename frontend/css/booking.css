@@ -273,6 +273,18 @@
   text-transform: uppercase;
 }
 
+.slot-btn-veh {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 4px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
 /* Slot States without relying on color alone */
 /* 1. Available: Solid hairline border */
 .slot-btn--available {

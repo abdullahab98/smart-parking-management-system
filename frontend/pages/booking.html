@@ -485,6 +485,12 @@
               numSpan.className = 'slot-btn-number';
               numSpan.textContent = s.slotNumber;
 
+              const vehSpan = document.createElement('span');
+              vehSpan.className = 'slot-btn-veh';
+              const isMotorcycleOnly = s.vehicleTypes && s.vehicleTypes.length === 1 && s.vehicleTypes.includes('MOTORCYCLE');
+              const isLargeCompatible = s.vehicleTypes && (s.vehicleTypes.includes('MICROBUS') || s.vehicleTypes.includes('VAN'));
+              vehSpan.textContent = isMotorcycleOnly ? 'Bike Bay' : (isLargeCompatible ? 'Car / Large' : 'Car Bay');
+
               const statusSpan = document.createElement('span');
               statusSpan.className = 'slot-btn-status';
 
@@ -519,6 +525,7 @@
               }
 
               btn.appendChild(numSpan);
+              btn.appendChild(vehSpan);
               btn.appendChild(statusSpan);
 
               // Click handler: only available slots are selectable

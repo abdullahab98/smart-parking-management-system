@@ -6,6 +6,102 @@ import Floor from '../models/Floor.js';
 import Unit from '../models/Unit.js';
 import ParkingSlot from '../models/ParkingSlot.js';
 
+/**
+ * Helper to build parking slots for a unit based on vehicle allocation or total bays
+ */
+export function generateSlotsForUnit({ locationId, floorId, unitId, floorNumber, unitCode, uData }) {
+  const slotsToInsert = [];
+  let slotIndex = 1;
+
+  const carBays = Number(uData.carBays ?? uData.carSlots ?? uData.carCount);
+  const motoBays = Number(uData.motorcycleBays ?? uData.motoBays ?? uData.motoSlots ?? uData.motoCount);
+  const largeBays = Number(uData.largeBays ?? uData.suvBays ?? uData.vanBays);
+
+  const hasExplicitBreakdown =
+    (!isNaN(carBays) && carBays > 0) ||
+    (!isNaN(motoBays) && motoBays > 0) ||
+    (!isNaN(largeBays) && largeBays > 0);
+
+  if (hasExplicitBreakdown) {
+    const numCar = Math.max(0, carBays || 0);
+    for (let i = 0; i < numCar; i++) {
+      const slotNumber = `${floorNumber}${unitCode}-${String(slotIndex).padStart(2, '0')}`;
+      slotsToInsert.push({
+        locationId,
+        floorId,
+        unitId,
+        slotNumber,
+        vehicleTypes: ['CAR', 'SUV'],
+        status: 'AVAILABLE',
+        position: { x: (slotIndex - 1) * 10, y: 10 }
+      });
+      slotIndex++;
+    }
+
+    const numMoto = Math.max(0, motoBays || 0);
+    for (let i = 0; i < numMoto; i++) {
+      const slotNumber = `${floorNumber}${unitCode}-${String(slotIndex).padStart(2, '0')}`;
+      slotsToInsert.push({
+        locationId,
+        floorId,
+        unitId,
+        slotNumber,
+        vehicleTypes: ['MOTORCYCLE'],
+        status: 'AVAILABLE',
+        position: { x: (slotIndex - 1) * 10, y: 10 }
+      });
+      slotIndex++;
+    }
+
+    const numLarge = Math.max(0, largeBays || 0);
+    for (let i = 0; i < numLarge; i++) {
+      const slotNumber = `${floorNumber}${unitCode}-${String(slotIndex).padStart(2, '0')}`;
+      slotsToInsert.push({
+        locationId,
+        floorId,
+        unitId,
+        slotNumber,
+        vehicleTypes: ['CAR', 'SUV', 'MICROBUS', 'VAN'],
+        status: 'AVAILABLE',
+        position: { x: (slotIndex - 1) * 10, y: 10 }
+      });
+      slotIndex++;
+    }
+  } else {
+    const bayCount = Math.max(1, Math.min(100, Number(uData.bays || uData.initialBays) || 10));
+    const pType = (uData.vehicleType || uData.primaryVehicleType || '').toUpperCase();
+
+    for (let i = 1; i <= bayCount; i++) {
+      const slotNumber = `${floorNumber}${unitCode}-${String(i).padStart(2, '0')}`;
+      let vehicleTypes = ['CAR', 'SUV'];
+
+      if (pType === 'MOTORCYCLE') {
+        vehicleTypes = ['MOTORCYCLE'];
+      } else if (pType === 'LARGE' || pType === 'MICROBUS') {
+        vehicleTypes = ['CAR', 'SUV', 'MICROBUS', 'VAN'];
+      } else if (pType === 'CAR') {
+        vehicleTypes = ['CAR', 'SUV'];
+      } else {
+        if (i % 5 === 0) vehicleTypes = ['MOTORCYCLE'];
+        else if (i % 7 === 0) vehicleTypes = ['CAR', 'SUV', 'MICROBUS', 'VAN'];
+        else vehicleTypes = ['CAR', 'SUV'];
+      }
+
+      slotsToInsert.push({
+        locationId,
+        floorId,
+        unitId,
+        slotNumber,
+        vehicleTypes,
+        status: 'AVAILABLE',
+        position: { x: (i - 1) * 10, y: 10 }
+      });
+    }
+  }
+
+  return slotsToInsert;
+}
+
 // ============================================================================
 // 1. LOCATION CONTROLLERS
 // ============================================================================
@@ -89,24 +185,14 @@ export const createLocation = async (req, res) => {
             status: 'ACTIVE'
           });
 
-          const bayCount = Math.max(1, Math.min(100, Number(uData.bays || uData.initialBays) || 10));
-          const slotsToInsert = [];
-          for (let i = 1; i <= bayCount; i++) {
-            const slotNumber = `${floorNumber}${unitCode}-${String(i).padStart(2, '0')}`;
-            let vehicleTypes = ['CAR', 'SUV'];
-            if (i % 5 === 0) vehicleTypes = ['MOTORCYCLE'];
-            else if (i % 7 === 0) vehicleTypes = ['CAR', 'SUV', 'MICROBUS', 'VAN'];
-
-            slotsToInsert.push({
-              locationId: location._id,
-              floorId: floor._id,
-              unitId: unit._id,
-              slotNumber,
-              vehicleTypes,
-              status: 'AVAILABLE',
-              position: { x: (i - 1) * 10, y: 10 }
-            });
-          }
+          const slotsToInsert = generateSlotsForUnit({
+            locationId: location._id,
+            floorId: floor._id,
+            unitId: unit._id,
+            floorNumber,
+            unitCode,
+            uData
+          });
           if (slotsToInsert.length > 0) {
             await ParkingSlot.insertMany(slotsToInsert);
           }
@@ -255,16 +341,34 @@ export const getLocationLayout = async (req, res) => {
 
       const layoutUnits = [];
       for (const un of units) {
-        const slotCount = await ParkingSlot.countDocuments({
+        const slots = await ParkingSlot.find({
           unitId: un._id,
           status: { $ne: 'INACTIVE' }
-        });
+        }).lean();
+
+        const carCount = slots.filter((s) => s.vehicleTypes.includes('CAR')).length;
+        const motoCount = slots.filter(
+          (s) => s.vehicleTypes.length === 1 && s.vehicleTypes.includes('MOTORCYCLE')
+        ).length;
+        const largeCount = slots.filter(
+          (s) => s.vehicleTypes.includes('MICROBUS') || s.vehicleTypes.includes('VAN')
+        ).length;
+
+        const summaryParts = [];
+        if (carCount > 0) summaryParts.push(`${carCount} Car`);
+        if (motoCount > 0) summaryParts.push(`${motoCount} Bike`);
+        if (largeCount > 0) summaryParts.push(`${largeCount} Large`);
+
         layoutUnits.push({
           _id: un._id,
           name: un.name,
           code: un.code,
           status: un.status,
-          slotCount
+          slotCount: slots.length,
+          carCount,
+          motoCount,
+          largeCount,
+          vehicleSummary: summaryParts.join(' • ') || `${slots.length} Bays`
         });
       }
 
@@ -655,36 +759,23 @@ export const createUnit = async (req, res) => {
       status: status || 'ACTIVE'
     });
 
-    const initialBays = Number(req.body.initialBays || req.body.bays) || 0;
-    if (initialBays > 0) {
-      const bayCount = Math.min(100, Math.max(1, initialBays));
-      const slotsToInsert = [];
-      for (let i = 1; i <= bayCount; i++) {
-        const slotNumber = `${floor.floorNumber}${normalizedCode}-${String(i).padStart(2, '0')}`;
-        let vehicleTypes = ['CAR', 'SUV'];
-        if (i % 5 === 0) vehicleTypes = ['MOTORCYCLE'];
-        else if (i % 7 === 0) vehicleTypes = ['CAR', 'SUV', 'MICROBUS', 'VAN'];
-
-        slotsToInsert.push({
-          locationId: floor.parkingLocationId,
-          floorId: floor._id,
-          unitId: unit._id,
-          slotNumber,
-          vehicleTypes,
-          status: 'AVAILABLE',
-          position: { x: (i - 1) * 10, y: 10 }
-        });
-      }
-      if (slotsToInsert.length > 0) {
-        await ParkingSlot.insertMany(slotsToInsert);
-      }
+    const slotsToInsert = generateSlotsForUnit({
+      locationId: floor.parkingLocationId,
+      floorId: floor._id,
+      unitId: unit._id,
+      floorNumber: floor.floorNumber,
+      unitCode: normalizedCode,
+      uData: req.body
+    });
+    if (slotsToInsert.length > 0) {
+      await ParkingSlot.insertMany(slotsToInsert);
     }
 
     return res.status(201).json({
       success: true,
       message: 'Unit created successfully.',
       unit,
-      createdBays: initialBays
+      createdBays: slotsToInsert.length
     });
   } catch (error) {
     console.error('[Parking Controller] createUnit error:', error);

@@ -256,7 +256,7 @@
               name: 'Floor 1',
               floorNumber: 1,
               units: [
-                { id: 1, name: 'Unit A', code: 'A', bays: 10 }
+                { id: 1, name: 'Unit A', code: 'A', carBays: 8, motoBays: 2, bays: 10 }
               ]
             }
           ];
@@ -328,17 +328,42 @@
               unitsTitle.style.alignItems = 'center';
               unitsTitle.style.marginBottom = 'var(--space-2)';
               unitsTitle.innerHTML = `
-                <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-ink-muted);">Units & Bays in ${fl.name}</span>
+                <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-ink-muted);">Units & Vehicle Allocation in ${fl.name}</span>
+                <span style="font-size: 10px; color: var(--color-ink-muted);">Specify bays per vehicle</span>
               `;
               unitsWrap.appendChild(unitsTitle);
+
+              // Table Column Header
+              const uColHeader = document.createElement('div');
+              uColHeader.style.display = 'grid';
+              uColHeader.style.gridTemplateColumns = '60px 1fr 75px 75px 45px 28px';
+              uColHeader.style.gap = 'var(--space-2)';
+              uColHeader.style.marginBottom = '4px';
+              uColHeader.style.fontSize = '10px';
+              uColHeader.style.fontWeight = '600';
+              uColHeader.style.textTransform = 'uppercase';
+              uColHeader.style.color = 'var(--color-ink-muted)';
+              uColHeader.innerHTML = `
+                <span>Code</span>
+                <span>Unit Name</span>
+                <span title="Car & SUV Bays">Car Bays</span>
+                <span title="Motorcycle Bays">Bike Bays</span>
+                <span style="text-align:center;">Total</span>
+                <span></span>
+              `;
+              unitsWrap.appendChild(uColHeader);
 
               fl.units.forEach((un) => {
                 const uRow = document.createElement('div');
                 uRow.style.display = 'grid';
-                uRow.style.gridTemplateColumns = '80px 1fr 100px 32px';
+                uRow.style.gridTemplateColumns = '60px 1fr 75px 75px 45px 28px';
                 uRow.style.gap = 'var(--space-2)';
                 uRow.style.alignItems = 'center';
                 uRow.style.marginBottom = 'var(--space-2)';
+
+                const carB = un.carBays != null ? un.carBays : 8;
+                const motoB = un.motoBays != null ? un.motoBays : 2;
+                const totB = Number(carB) + Number(motoB);
 
                 uRow.innerHTML = `
                   <div>
@@ -348,9 +373,27 @@
                     <input type="text" class="form-input unit-name-input" data-floor-id="${fl.id}" data-unit-id="${un.id}" value="${un.name}" placeholder="Unit Name" style="width:100%; box-sizing:border-box; font-size:12px; padding:4px 6px;">
                   </div>
                   <div>
-                    <input type="number" class="form-input unit-bays-input" data-floor-id="${fl.id}" data-unit-id="${un.id}" value="${un.bays}" min="1" max="100" placeholder="Bays" style="width:100%; box-sizing:border-box; font-size:12px; padding:4px 6px;" title="Number of parking bays">
+                    <input type="number" class="form-input unit-car-input" data-floor-id="${fl.id}" data-unit-id="${un.id}" value="${carB}" min="0" max="100" placeholder="Car" title="Car Bays" style="width:100%; box-sizing:border-box; font-size:12px; padding:4px 6px;">
+                  </div>
+                  <div>
+                    <input type="number" class="form-input unit-moto-input" data-floor-id="${fl.id}" data-unit-id="${un.id}" value="${motoB}" min="0" max="100" placeholder="Bike" title="Motorcycle Bays" style="width:100%; box-sizing:border-box; font-size:12px; padding:4px 6px;">
+                  </div>
+                  <div class="unit-total-label" style="text-align:center; font-size:11px; font-weight:700; color:var(--color-ink);">
+                    ${totB}
                   </div>
                 `;
+
+                // Update total on input change
+                const carInp = uRow.querySelector('.unit-car-input');
+                const motoInp = uRow.querySelector('.unit-moto-input');
+                const totLbl = uRow.querySelector('.unit-total-label');
+                const updateTot = () => {
+                  const c = Math.max(0, Number(carInp.value) || 0);
+                  const m = Math.max(0, Number(motoInp.value) || 0);
+                  totLbl.textContent = c + m;
+                };
+                carInp.addEventListener('input', updateTot);
+                motoInp.addEventListener('input', updateTot);
 
                 const removeUnitBtn = document.createElement('button');
                 removeUnitBtn.type = 'button';
@@ -387,6 +430,8 @@
                   id: nextUnitId++,
                   name: `Unit ${nextCodeLetter}`,
                   code: nextCodeLetter,
+                  carBays: 8,
+                  motoBays: 2,
                   bays: 10
                 });
                 renderFloorsBuilder();
@@ -413,8 +458,13 @@
                 const uNameInput = modal.querySelector(`.unit-name-input[data-floor-id="${fl.id}"][data-unit-id="${un.id}"]`);
                 if (uNameInput) un.name = uNameInput.value.trim();
 
-                const baysInput = modal.querySelector(`.unit-bays-input[data-floor-id="${fl.id}"][data-unit-id="${un.id}"]`);
-                if (baysInput) un.bays = Number(baysInput.value) || 10;
+                const carInput = modal.querySelector(`.unit-car-input[data-floor-id="${fl.id}"][data-unit-id="${un.id}"]`);
+                if (carInput) un.carBays = Math.max(0, Number(carInput.value) || 0);
+
+                const motoInput = modal.querySelector(`.unit-moto-input[data-floor-id="${fl.id}"][data-unit-id="${un.id}"]`);
+                if (motoInput) un.motoBays = Math.max(0, Number(motoInput.value) || 0);
+
+                un.bays = (un.carBays || 0) + (un.motoBays || 0);
               });
             });
           }
@@ -490,7 +540,7 @@
               name: `Floor ${nextFloorNum}`,
               floorNumber: nextFloorNum,
               units: [
-                { id: nextUnitId++, name: 'Unit A', code: 'A', bays: 10 }
+                { id: nextUnitId++, name: 'Unit A', code: 'A', carBays: 8, motoBays: 2, bays: 10 }
               ]
             });
             renderFloorsBuilder();
@@ -515,7 +565,9 @@
               units: fl.units.map(un => ({
                 name: un.name || `Unit ${un.code}`,
                 code: (un.code || 'A').toUpperCase().trim(),
-                bays: Number(un.bays) || 10
+                carBays: un.carBays != null ? Number(un.carBays) : 8,
+                motoBays: un.motoBays != null ? Number(un.motoBays) : 2,
+                bays: (Number(un.carBays) || 0) + (Number(un.motoBays) || 0)
               }))
             }));
 
@@ -893,20 +945,36 @@
                 const unitFormBox = document.createElement('div');
                 unitFormBox.style.display = 'none';
                 unitFormBox.style.background = 'var(--color-surface)';
-                unitFormBox.style.padding = 'var(--space-2) var(--space-3)';
+                unitFormBox.style.padding = 'var(--space-3)';
                 unitFormBox.style.marginBottom = 'var(--space-3)';
                 unitFormBox.style.border = '1px solid var(--color-border)';
 
                 unitFormBox.innerHTML = `
-                  <div style="font-size:11px; font-weight:700; margin-bottom:4px;">Add Unit to ${floor.name}</div>
-                  <div style="display:grid; grid-template-columns: 80px 1fr 100px auto auto; gap:6px; align-items:center;">
-                    <input type="text" placeholder="Code (e.g. B)" class="form-input new-unit-code" maxlength="4" style="font-size:11px; padding:4px 6px; text-transform:uppercase;">
-                    <input type="text" placeholder="Unit Name" class="form-input new-unit-name" style="font-size:11px; padding:4px 6px;">
-                    <input type="number" placeholder="Bays (e.g. 10)" value="10" min="1" max="100" class="form-input new-unit-bays" style="font-size:11px; padding:4px 6px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+                    <span style="font-size:11px; font-weight:700;">Add Unit to ${floor.name}</span>
+                    <span style="font-size:10px; color:var(--color-ink-muted);">Specify bays per vehicle</span>
+                  </div>
+                  <div style="display:grid; grid-template-columns: 70px 1fr 75px 75px 40px auto auto; gap:6px; align-items:center;">
+                    <input type="text" placeholder="Code" class="form-input new-unit-code" maxlength="4" style="font-size:11px; padding:4px 6px; text-transform:uppercase;" title="Unit Code (e.g. B)">
+                    <input type="text" placeholder="Unit Name" class="form-input new-unit-name" style="font-size:11px; padding:4px 6px;" title="Unit Name">
+                    <input type="number" placeholder="Car" value="8" min="0" max="100" class="form-input new-unit-car" style="font-size:11px; padding:4px 6px;" title="Car & SUV Bays">
+                    <input type="number" placeholder="Bike" value="2" min="0" max="100" class="form-input new-unit-moto" style="font-size:11px; padding:4px 6px;" title="Motorcycle Bays">
+                    <span class="new-unit-total" style="font-size:11px; font-weight:700; text-align:center;">10</span>
                     <button type="button" class="btn btn-primary btn-save-unit" style="font-size:11px; padding:4px 10px;">Add</button>
                     <button type="button" class="btn btn-secondary btn-cancel-unit" style="font-size:11px; padding:4px 6px;">✕</button>
                   </div>
                 `;
+
+                const carInput = unitFormBox.querySelector('.new-unit-car');
+                const motoInput = unitFormBox.querySelector('.new-unit-moto');
+                const totalSpan = unitFormBox.querySelector('.new-unit-total');
+                const updateInlineTotal = () => {
+                  const c = Math.max(0, Number(carInput.value) || 0);
+                  const m = Math.max(0, Number(motoInput.value) || 0);
+                  totalSpan.textContent = c + m;
+                };
+                carInput.addEventListener('input', updateInlineTotal);
+                motoInput.addEventListener('input', updateInlineTotal);
 
                 addUnitToggleBtn.onclick = () => {
                   unitFormBox.style.display = unitFormBox.style.display === 'none' ? 'block' : 'none';
@@ -918,10 +986,16 @@
                 unitFormBox.querySelector('.btn-save-unit').onclick = async () => {
                   const codeVal = unitFormBox.querySelector('.new-unit-code').value.trim();
                   const nameVal = unitFormBox.querySelector('.new-unit-name').value.trim();
-                  const baysVal = Number(unitFormBox.querySelector('.new-unit-bays').value) || 10;
+                  const carBaysVal = Math.max(0, Number(carInput.value) || 0);
+                  const motoBaysVal = Math.max(0, Number(motoInput.value) || 0);
+                  const baysVal = carBaysVal + motoBaysVal;
 
                   if (!codeVal) {
                     alert('Please enter a unit code (e.g. A, B).');
+                    return;
+                  }
+                  if (baysVal <= 0) {
+                    alert('Please configure at least 1 bay (Car or Bike).');
                     return;
                   }
 
@@ -931,10 +1005,12 @@
                       body: {
                         code: codeVal,
                         name: nameVal || `Unit ${codeVal.toUpperCase()}`,
+                        carBays: carBaysVal,
+                        motoBays: motoBaysVal,
                         bays: baysVal
                       }
                     });
-                    if (typeof showToast === 'function') showToast(`Unit ${codeVal} created with ${baysVal} bays`, 'success');
+                    if (typeof showToast === 'function') showToast(`Unit ${codeVal} created (${carBaysVal} Car • ${motoBaysVal} Bike)`, 'success');
                     await loadHierarchy();
                   } catch (err) {
                     alert('Failed to add unit: ' + err.message);
@@ -964,7 +1040,13 @@
                     uCard.innerHTML = `
                       <div>
                         <div style="font-size:12px; font-weight:700;">${unit.name} <span style="font-size:10px; color:var(--color-ink-muted);">[${unit.code}]</span></div>
-                        <div style="font-size:11px; color:var(--color-ink-muted);">${unit.slotCount} Parking Bays</div>
+                        <div style="font-size:11px; margin-top:2px;">
+                          <strong>${unit.slotCount} Bays</strong>
+                          <span style="color:var(--color-ink-muted); margin:0 4px;">•</span>
+                          <span style="color:var(--color-accent); font-weight:600;">${unit.carCount || 0} Car</span>
+                          <span style="color:var(--color-ink-muted); margin:0 4px;">•</span>
+                          <span style="color:#0277bd; font-weight:600;">${unit.motoCount || 0} Bike</span>
+                        </div>
                       </div>
                     `;
 
