@@ -76,10 +76,50 @@
     <!-- Hero Section -->
     <section class="hero" id="hero" aria-labelledby="hero-title">
       <div class="container">
-        <div class="hero-content">
-          <p class="hero-eyebrow">Secure • Easy • Fast</p>
-          <h1 class="hero-title" id="hero-title">Find Your Parking Space Before You Arrive.</h1>
-          <p class="hero-subheading">Book secure parking spaces by hour or day, anywhere in the city.</p>
+        <div class="hero-layout-grid">
+          <!-- Left Column: Content -->
+          <div class="hero-content">
+            <div class="hero-eyebrow-wrap">
+              <span class="hero-eyebrow">Smart Urban Mobility</span>
+              <span class="hero-live-badge">
+                <span class="hero-live-dot"></span>
+                IoT Sensors Active
+              </span>
+            </div>
+            <h1 class="hero-title" id="hero-title">Find &amp; Guarantee Your Smart Parking Bay.</h1>
+            <p class="hero-subheading">Book automated parking bays with real-time occupancy sensors and instant QR gate access anywhere in Dhaka.</p>
+            
+            <div class="hero-highlights">
+              <span class="hero-highlight-pill">✓ Overhead LED Guidance</span>
+              <span class="hero-highlight-pill">✓ Contactless Gate In/Out</span>
+              <span class="hero-highlight-pill">✓ Live Bay Status</span>
+            </div>
+          </div>
+
+          <!-- Right Column: Parking Image Card with Floating Badges -->
+          <div class="hero-media-wrapper">
+            <div class="hero-image-frame">
+              <img src="images/hero-parking-smart.jpg" alt="Automated Smart Parking Garage with Overhead LED Sensors" class="hero-parking-img" loading="eager">
+              
+              <!-- Floating Live Telemetry Overlay Card -->
+              <div class="hero-float-card hero-float-top">
+                <span class="hero-float-dot"></span>
+                <div>
+                  <div class="hero-float-title">Sensors Active</div>
+                  <div class="hero-float-sub">Overhead LED Guidance</div>
+                </div>
+              </div>
+
+              <!-- Floating Available Bays Overlay Card -->
+              <div class="hero-float-card hero-float-bottom">
+                <div class="hero-float-icon">P</div>
+                <div>
+                  <div class="hero-float-title">Bay 01 – Bay 05 Open</div>
+                  <div class="hero-float-sub">Fast Automatic Check-in</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Search Widget Card -->
