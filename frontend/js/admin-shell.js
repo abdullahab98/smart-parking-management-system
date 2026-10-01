@@ -91,6 +91,12 @@ function renderAdminShell(activeKey) {
   const brandSummary = document.createElement('div');
   brandSummary.className = 'sidebar-brand-summary';
 
+  const logoLink = document.createElement('a');
+  logoLink.href = `${siteRoot}index.html`;
+  logoLink.className = 'sidebar-brand-link';
+  logoLink.setAttribute('aria-label', 'Return to Smart Parking Home');
+  logoLink.innerHTML = `<img src="${siteRoot}images/smart-parking-logo.svg" alt="Smart Parking System" class="sidebar-logo-img">`;
+
   const portalLabel = document.createElement('span');
   portalLabel.className = 'sidebar-portal-label';
   portalLabel.textContent = 'System Administration';
@@ -99,6 +105,7 @@ function renderAdminShell(activeKey) {
   userNameEl.className = 'sidebar-user-name';
   userNameEl.textContent = fullName;
 
+  brandSummary.appendChild(logoLink);
   brandSummary.appendChild(portalLabel);
   brandSummary.appendChild(userNameEl);
   sidebarTop.appendChild(brandSummary);

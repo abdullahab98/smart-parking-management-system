@@ -22,7 +22,9 @@ function renderSiteChrome(activeKey = '') {
     brand.href = homeUrl;
     brand.className = 'brand-logo';
     brand.setAttribute('aria-label', 'Smart Parking Home');
-    brand.textContent = 'Smart Parking';
+    brand.innerHTML = `
+      <img src="${siteRoot}images/smart-parking-logo.svg" alt="Smart Parking System" style="height: 38px; width: auto; display: block;" onerror="this.outerHTML='<span style=\\'font-family:var(--font-display); font-weight:700; font-size:1.25rem; color:var(--color-ink);\\'>Smart Parking</span>'">
+    `;
     container.appendChild(brand);
 
     // Mobile Navigation Hamburger Toggle Button
@@ -110,7 +112,9 @@ function getSharedFooterHTML(siteRoot = '../') {
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand-col">
-          <a href="${homeUrl}" class="brand-logo footer-logo">Smart Parking</a>
+          <a href="${homeUrl}" class="brand-logo footer-logo" aria-label="Smart Parking Home">
+            <img src="${siteRoot}images/smart-parking-logo.svg" alt="Smart Parking System" style="height: 36px; width: auto; display: block;" onerror="this.outerHTML='<span style=\\'font-family:var(--font-display); font-weight:700; font-size:1.25rem; color:var(--color-ink);\\'>Smart Parking</span>'">
+          </a>
           <p class="footer-tagline">Curated, reliable urban space reservations designed for intentional mobility.</p>
         </div>
 
