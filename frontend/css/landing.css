@@ -310,6 +310,12 @@
   transition: border-color 0.15s ease;
 }
 
+.search-select {
+  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .search-input::placeholder {
   color: var(--color-muted);
   opacity: 0.75;

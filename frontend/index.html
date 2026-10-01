@@ -127,16 +127,15 @@
           <form class="search-widget" id="hero-search-form" novalidate>
             <div class="search-field search-field-location">
               <label for="search-location" class="search-label">Location</label>
-              <input 
-                type="text" 
+              <select 
                 id="search-location" 
-                name="location" 
-                class="search-input" 
-                placeholder="Where do you want to park?" 
-                list="hero-locations-datalist" 
-                autocomplete="off" 
+                name="locationId" 
+                class="search-select" 
+                aria-label="Select Parking Location"
                 required>
-              <datalist id="hero-locations-datalist"></datalist>
+                <option value="">Select a Parking Facility...</option>
+                <option value="ALL">All Available Facilities</option>
+              </select>
             </div>
 
             <div class="search-field search-field-date">

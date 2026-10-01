@@ -60,13 +60,18 @@ function initHeroSearch() {
       }
 
       const params = new URLSearchParams();
-      if (locationVal) params.set('q', locationVal);
       if (dateVal) params.set('date', dateVal);
       if (timeVal) params.set('time', timeVal);
       if (durationVal) params.set('duration', durationVal.toUpperCase());
 
-      // Redirect to parking directory
-      window.location.href = `pages/parking.html?${params.toString()}`;
+      // If a specific parking facility is selected from dropdown, navigate directly to facility bays
+      if (locationVal && locationVal !== 'ALL') {
+        params.set('id', locationVal);
+        window.location.href = `pages/parking-details.html?${params.toString()}`;
+      } else {
+        // Otherwise browse all active locations in the parking directory
+        window.location.href = `pages/parking.html?${params.toString()}`;
+      }
     });
   }
 }
@@ -76,6 +81,7 @@ function initHeroSearch() {
  */
 async function loadDynamicLocations() {
   const grid = document.getElementById('landing-locations-grid') || document.querySelector('.locations-grid');
+  const locSelect = document.getElementById('search-location');
   const datalist = document.getElementById('hero-locations-datalist');
 
   if (typeof apiRequest !== 'function') return;
@@ -84,7 +90,33 @@ async function loadDynamicLocations() {
     const res = await apiRequest('/public/locations');
     const locations = res && res.locations ? res.locations : [];
 
-    // Populate Datalist for autocomplete in Hero search
+    // Populate Hero Search Location Select Dropdown
+    if (locSelect && locations.length > 0) {
+      locSelect.innerHTML = '';
+
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.textContent = 'Select a Parking Facility...';
+      locSelect.appendChild(defaultOpt);
+
+      const allOpt = document.createElement('option');
+      allOpt.value = 'ALL';
+      allOpt.textContent = `All Available Facilities (${locations.length} Locations)`;
+      locSelect.appendChild(allOpt);
+
+      locations.forEach((loc) => {
+        const option = document.createElement('option');
+        option.value = loc._id;
+        const areaStr = loc.address && loc.address.area ? loc.address.area : '';
+        const cityStr = loc.address && loc.address.city ? loc.address.city : 'Dhaka';
+        const locLabel = areaStr ? `${loc.name} (${areaStr}, ${cityStr})` : `${loc.name} (${cityStr})`;
+        const avail = typeof loc.availableSlots === 'number' ? loc.availableSlots : (loc.totalSlots || 0);
+        option.textContent = `${locLabel} — ${avail > 0 ? `${avail} Bays Open` : 'Fully Booked'}`;
+        locSelect.appendChild(option);
+      });
+    }
+
+    // Populate Datalist for autocomplete if present
     if (datalist && locations.length > 0) {
       datalist.innerHTML = '';
       const suggestions = new Set();
