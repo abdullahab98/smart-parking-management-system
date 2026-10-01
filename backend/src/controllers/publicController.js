@@ -95,26 +95,16 @@ export const getPublicLocations = async (req, res) => {
     const availableCountMap = new Map();
     locIds.forEach((id) => availableCountMap.set(id.toString(), 0));
 
-    if (hasWindow) {
-      const { start, end } = resolveBookingWindow(req.query);
-      const slotIds = candidateSlots.map((s) => s._id);
-      const bookedIds = await findBookedSlotIds(slotIds, start, end);
+    const { start, end } = resolveBookingWindow(req.query);
+    const slotIds = candidateSlots.map((s) => s._id);
+    const bookedIds = await findBookedSlotIds(slotIds, start, end);
 
-      candidateSlots.forEach((slot) => {
-        if (slot.status === 'AVAILABLE' && !bookedIds.has(slot._id.toString())) {
-          const locKey = slot.locationId.toString();
-          availableCountMap.set(locKey, (availableCountMap.get(locKey) || 0) + 1);
-        }
-      });
-    } else {
-      // Without a window, availableSlots counts only status 'AVAILABLE' (exclude MAINTENANCE and DISABLED)
-      candidateSlots.forEach((slot) => {
-        if (slot.status === 'AVAILABLE') {
-          const locKey = slot.locationId.toString();
-          availableCountMap.set(locKey, (availableCountMap.get(locKey) || 0) + 1);
-        }
-      });
-    }
+    candidateSlots.forEach((slot) => {
+      if (slot.status === 'AVAILABLE' && !bookedIds.has(slot._id.toString())) {
+        const locKey = slot.locationId.toString();
+        availableCountMap.set(locKey, (availableCountMap.get(locKey) || 0) + 1);
+      }
+    });
 
     // Retrieve base hourly rate from pricing rules
     let dynamicBaseHourly = 30;
@@ -257,6 +247,13 @@ export const getFloorsForLocation = async (req, res) => {
       ).length;
       const occupied = slots.filter((s) => bookedIds.has(s._id.toString())).length;
       const disabled = slots.filter((s) => s.status !== 'AVAILABLE').length;
+      const incompatible = slots.filter(
+        (s) =>
+          s.status === 'AVAILABLE' &&
+          vehicleType &&
+          s.vehicleTypes &&
+          !s.vehicleTypes.includes(vehicleType)
+      ).length;
 
       return {
         _id: floor._id,
@@ -266,7 +263,9 @@ export const getFloorsForLocation = async (req, res) => {
         total,
         available,
         occupied,
-        disabled
+        disabled,
+        incompatible,
+        vehicleType
       };
     });
 
@@ -344,6 +343,13 @@ export const getUnitsForFloor = async (req, res) => {
       ).length;
       const occupied = slots.filter((s) => bookedIds.has(s._id.toString())).length;
       const disabled = slots.filter((s) => s.status !== 'AVAILABLE').length;
+      const incompatible = slots.filter(
+        (s) =>
+          s.status === 'AVAILABLE' &&
+          vehicleType &&
+          s.vehicleTypes &&
+          !s.vehicleTypes.includes(vehicleType)
+      ).length;
 
       return {
         _id: unit._id,
@@ -353,7 +359,9 @@ export const getUnitsForFloor = async (req, res) => {
         total,
         available,
         occupied,
-        disabled
+        disabled,
+        incompatible,
+        vehicleType
       };
     });
 
