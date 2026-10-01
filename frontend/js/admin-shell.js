@@ -10,7 +10,7 @@ const ADMIN_NAV_CONFIG = [
   { key: 'bookings', label: 'Global Bookings', path: 'pages/admin/bookings.html' },
   { key: 'payments', label: 'Transactions Ledger', path: 'pages/admin/payments.html' },
   { key: 'pricing', label: 'Pricing Rules', path: 'pages/admin/pricing.html' },
-  { key: 'profile', label: 'My Account', path: 'pages/customer/profile.html' }
+  { key: 'profile', label: 'My Account', path: 'pages/admin/profile.html' }
 ];
 
 /**

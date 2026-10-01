@@ -9,7 +9,7 @@ const MANAGER_NAV_CONFIG = [
   { key: 'slots', label: 'Parking Slots', path: 'pages/manager/slots.html' },
   { key: 'entry_exit', label: 'Entry / Exit', path: 'pages/manager/entry-exit.html' },
   { key: 'reports', label: 'Reports', path: 'pages/manager/reports.html' },
-  { key: 'profile', label: 'Profile', path: 'pages/customer/profile.html' }
+  { key: 'profile', label: 'Profile', path: 'pages/manager/profile.html' }
 ];
 
 /**

@@ -31,6 +31,15 @@
   <script>
     async function initProfile() {
       try {
+        const user = typeof getUser === 'function' ? getUser() : null;
+        if (user && user.role === 'ADMIN') {
+          window.location.replace('../admin/profile.html');
+          return;
+        } else if (user && user.role === 'MANAGER') {
+          window.location.replace('../manager/profile.html');
+          return;
+        }
+
         const appContent = renderShell('profile');
         if (!appContent) return;
 
