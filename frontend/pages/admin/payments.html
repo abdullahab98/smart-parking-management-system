@@ -226,6 +226,31 @@
           }
         }
 
+        function createStatCard(label, value, subtext = '') {
+          const card = document.createElement('div');
+          card.className = 'stat-card';
+
+          const lbl = document.createElement('span');
+          lbl.className = 'stat-card-label';
+          lbl.textContent = label;
+
+          const val = document.createElement('div');
+          val.className = 'stat-card-value';
+          val.textContent = value;
+
+          card.appendChild(lbl);
+          card.appendChild(val);
+
+          if (subtext) {
+            const sub = document.createElement('span');
+            sub.className = 'stat-card-sub';
+            sub.textContent = subtext;
+            card.appendChild(sub);
+          }
+
+          return card;
+        }
+
         // Initial Load
         fetchPayments(1);
 
