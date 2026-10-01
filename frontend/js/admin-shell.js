@@ -164,6 +164,24 @@ function renderAdminShell(activeKey) {
     mobileTabBar.appendChild(a);
   });
 
+  const mobileLogout = document.createElement('button');
+  mobileLogout.type = 'button';
+  mobileLogout.className = 'mobile-tab-link';
+  mobileLogout.style.background = 'none';
+  mobileLogout.style.border = 'none';
+  mobileLogout.style.cursor = 'pointer';
+  mobileLogout.textContent = 'Log Out';
+  mobileLogout.addEventListener('click', async () => {
+    if (typeof logout === 'function') {
+      await logout();
+    } else {
+      localStorage.removeItem('sp_token');
+      localStorage.removeItem('sp_user');
+      window.location.href = `${siteRoot}pages/login.html`;
+    }
+  });
+  mobileTabBar.appendChild(mobileLogout);
+
   shellRoot.appendChild(mobileTabBar);
 
   // --------------------------------------------------------------------------

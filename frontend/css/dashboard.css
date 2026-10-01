@@ -515,15 +515,19 @@
    Desktop Data Table & Mobile Stacked Cards
    -------------------------------------------------------------------------- */
 .data-table-container {
-  display: none;
+  display: block;
+  width: 100%;
   background-color: #FFFFFF;
   border: 1px solid var(--color-border);
+  border-radius: var(--radius);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-@media (min-width: 768px) {
-  .data-table-container {
-    display: block;
+@media (max-width: 767px) {
+  .data-table-container:has(~ .stacked-cards-list),
+  .data-table-container:has(+ .stacked-cards-list) {
+    display: none;
   }
 }
 
